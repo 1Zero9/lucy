@@ -4,6 +4,7 @@ export type Note = {
   id: string;
   workspace_id: string;
   module_id: string | null;
+  folder_id: string | null;
   title: string;
   content_json: string;
   content_text: string;
@@ -28,7 +29,7 @@ export type NoteVersion = {
 export type NoteSource = "create" | "autosave" | "manual" | "restore";
 
 const NOTE_COLUMNS =
-  "id, workspace_id, module_id, title, content_json, content_text, colour, is_pinned, current_version, created_at, updated_at, deleted_at";
+  "id, workspace_id, module_id, folder_id, title, content_json, content_text, colour, is_pinned, current_version, created_at, updated_at, deleted_at";
 
 /**
  * A fresh snapshot into note_versions is only taken when the previous one is
@@ -39,24 +40,53 @@ const NOTE_COLUMNS =
 const SNAPSHOT_INTERVAL_MS = 2 * 60 * 1000;
 
 function toContentJson(text: string): string {
-  return JSON.stringify({ type: "plaintext", text });
+  return JSON.stringify({ type: "markdown", text });
 }
+
+export type NoteListOpts = {
+  deleted?: boolean;
+  /** null = notes with no folder; string = that folder; undefined = any. */
+  folderId?: string | null;
+  tagId?: string;
+};
 
 export async function listNotes(
   db: D1Database,
   userId: string,
   workspaceId: string,
-  opts: { deleted?: boolean } = {}
+  opts: NoteListOpts = {}
 ): Promise<Note[]> {
-  const deletedClause = opts.deleted ? "deleted_at IS NOT NULL" : "deleted_at IS NULL";
-  const order = opts.deleted ? "deleted_at DESC" : "is_pinned DESC, updated_at DESC";
+  const where: string[] = ["n.user_id = ?", "n.workspace_id = ?"];
+  const values: unknown[] = [userId, workspaceId];
+
+  where.push(opts.deleted ? "n.deleted_at IS NOT NULL" : "n.deleted_at IS NULL");
+
+  if (opts.folderId === null) {
+    where.push("n.folder_id IS NULL");
+  } else if (typeof opts.folderId === "string") {
+    where.push("n.folder_id = ?");
+    values.push(opts.folderId);
+  }
+
+  let join = "";
+  if (opts.tagId) {
+    join = "JOIN note_tags nt ON nt.note_id = n.id AND nt.user_id = n.user_id";
+    where.push("nt.tag_id = ?");
+    values.push(opts.tagId);
+  }
+
+  const order = opts.deleted ? "n.deleted_at DESC" : "n.is_pinned DESC, n.updated_at DESC";
+  const cols = NOTE_COLUMNS.split(", ")
+    .map((c) => `n.${c}`)
+    .join(", ");
+
   const { results } = await db
     .prepare(
-      `SELECT ${NOTE_COLUMNS} FROM notes
-       WHERE user_id = ? AND workspace_id = ? AND ${deletedClause}
+      `SELECT ${cols} FROM notes n ${join}
+       WHERE ${where.join(" AND ")}
        ORDER BY ${order}`
     )
-    .bind(userId, workspaceId)
+    .bind(...values)
     .all<Note>();
   return results;
 }
@@ -77,6 +107,7 @@ export async function getNote(
 export type NewNote = {
   workspaceId: string;
   moduleId?: string | null;
+  folderId?: string | null;
   title?: string | null;
   text?: string | null;
 };
@@ -96,11 +127,22 @@ export async function createNote(
     db
       .prepare(
         `INSERT INTO notes
-          (id, user_id, workspace_id, module_id, title, content_json, content_text,
+          (id, user_id, workspace_id, module_id, folder_id, title, content_json, content_text,
            current_version, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)`
       )
-      .bind(id, userId, input.workspaceId, input.moduleId ?? null, title, json, text, ts, ts),
+      .bind(
+        id,
+        userId,
+        input.workspaceId,
+        input.moduleId ?? null,
+        input.folderId ?? null,
+        title,
+        json,
+        text,
+        ts,
+        ts
+      ),
     db
       .prepare(
         `INSERT INTO note_versions
@@ -115,11 +157,18 @@ export async function createNote(
   return created;
 }
 
-export type NotePatch = { title?: string; text?: string };
+export type NotePatch = {
+  title?: string;
+  text?: string;
+  colour?: string | null;
+  isPinned?: boolean;
+  folderId?: string | null;
+};
 
 /**
  * Update the live note and, on the snapshot cadence, append a note_versions row.
- * No-op (returns the note unchanged) when nothing actually changed.
+ * Content changes (title/text) drive versioning; metadata changes (colour, pin,
+ * folder) update the row only. No-op when nothing actually changed.
  */
 export async function updateNote(
   db: D1Database,
@@ -133,8 +182,25 @@ export async function updateNote(
 
   const nextTitle = patch.title !== undefined ? patch.title.trim() || "Untitled note" : note.title;
   const nextText = patch.text !== undefined ? patch.text : note.content_text;
-  const changed = nextTitle !== note.title || nextText !== note.content_text;
-  if (!changed && source !== "manual") return note;
+  const contentChanged = nextTitle !== note.title || nextText !== note.content_text;
+
+  const sets: string[] = [];
+  const values: unknown[] = [];
+  if (patch.colour !== undefined) {
+    sets.push("colour = ?");
+    values.push(patch.colour);
+  }
+  if (patch.isPinned !== undefined) {
+    sets.push("is_pinned = ?");
+    values.push(patch.isPinned ? 1 : 0);
+  }
+  if (patch.folderId !== undefined) {
+    sets.push("folder_id = ?");
+    values.push(patch.folderId);
+  }
+  const metaChanged = sets.length > 0;
+
+  if (!contentChanged && !metaChanged && source !== "manual") return note;
 
   const ts = nowIso();
   const json = toContentJson(nextText);
@@ -148,16 +214,19 @@ export async function updateNote(
     .first<{ version: number; created_at: string }>();
 
   const lastAgeMs = last ? Date.now() - Date.parse(last.created_at) : Infinity;
-  const snapshot = changed && (source === "manual" || !last || lastAgeMs > SNAPSHOT_INTERVAL_MS);
+  const snapshot =
+    contentChanged && (source === "manual" || !last || lastAgeMs > SNAPSHOT_INTERVAL_MS);
   const nextVersion = snapshot ? (last?.version ?? 0) + 1 : note.current_version;
 
   const statements = [
     db
       .prepare(
-        `UPDATE notes SET title = ?, content_text = ?, content_json = ?, current_version = ?, updated_at = ?
+        `UPDATE notes SET title = ?, content_text = ?, content_json = ?, current_version = ?, updated_at = ?${
+          sets.length ? ", " + sets.join(", ") : ""
+        }
          WHERE id = ? AND user_id = ? AND deleted_at IS NULL`
       )
-      .bind(nextTitle, nextText, json, nextVersion, ts, id, userId)
+      .bind(nextTitle, nextText, json, nextVersion, ts, ...values, id, userId)
   ];
   if (snapshot) {
     statements.push(

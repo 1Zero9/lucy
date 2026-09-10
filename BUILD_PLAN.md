@@ -50,12 +50,12 @@
 **Exit:** Core MASTER.md note acceptance tests pass. — met (tests 6-13, 15)
 
 ## Phase 2 — Rich note experience
-- [ ] Rich text editor
-- [ ] Colours
-- [ ] Tags
-- [ ] Lightweight folders
-- [ ] Pin/favourite
-- [ ] Continue/active notes
+- [x] Rich text editor (Markdown: toolbar + Write/Split/Preview, safe renderer)
+- [x] Colours
+- [x] Tags
+- [x] Lightweight folders
+- [x] Pin/favourite
+- [x] Continue/active notes (Home "Continue" list, pinned-first ordering)
 
 ## Phase 3 — Files
 - [ ] R2 upload

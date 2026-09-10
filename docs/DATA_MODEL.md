@@ -17,10 +17,15 @@ Better Auth tables keep that library's column names (camelCase mapped to
 snake_case in `src/lib/auth/auth.ts`); booleans are `0/1` INTEGER and dates are
 ISO-8601 TEXT, matching the rest of the schema.
 
+## Added in Phase 2 (`0003_notes_rich.sql`)
+
+- `folders` — optional bucket inside a workspace; `notes.folder_id` references it
+- `tags` / `note_tags` — workspace-scoped labels, many-to-many with notes
+- Note content is now Markdown (`content_json` = `{"type":"markdown","text":…}`);
+  `notes.colour` and `notes.is_pinned` (from 0001) are now surfaced by the app
+
 ## Later
 
-- `tags`
-- `note_tags`
 - `stickies`
 - `tasks`
 - `attachments`

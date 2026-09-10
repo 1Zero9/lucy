@@ -299,3 +299,92 @@ test("restoring an older version does not lose later history", async () => {
   assert.equal(v2.content_text, "two");
   assert.equal(v3.content_text, "three");
 });
+
+test("colour and pin persist and do not create a version", async () => {
+  const a = authed((await signUpJar("cp")).header());
+  const ws = await makeWorkspace(a, "Colour/pin");
+  const { note } = await (
+    await a(`/api/workspaces/${ws.id}/notes`, {
+      method: "POST",
+      body: JSON.stringify({ title: "Styled" })
+    })
+  ).json();
+
+  const before = (await (await a(`/api/notes/${note.id}/versions`)).json()).versions.length;
+
+  await a(`/api/notes/${note.id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ colour: "#dcfce7", isPinned: true })
+  });
+
+  const got = (await (await a(`/api/notes/${note.id}`)).json()).note;
+  assert.equal(got.colour, "#DCFCE7");
+  assert.equal(got.is_pinned, 1);
+
+  const after = (await (await a(`/api/notes/${note.id}/versions`)).json()).versions.length;
+  assert.equal(after, before, "metadata changes must not add a version");
+});
+
+test("folders and tags are workspace-scoped, private, and filter the note list", async () => {
+  const a = authed((await signUpJar("ft")).header());
+  const b = authed((await signUpJar("fu")).header());
+  const ws = await makeWorkspace(a, "Filing");
+
+  const { folder } = await (
+    await a(`/api/workspaces/${ws.id}/folders`, {
+      method: "POST",
+      body: JSON.stringify({ name: "Lectures" })
+    })
+  ).json();
+
+  const inFolder = (await (
+    await a(`/api/workspaces/${ws.id}/notes`, {
+      method: "POST",
+      body: JSON.stringify({ title: "In folder", folderId: folder.id })
+    })
+  ).json()).note;
+  const loose = (await (
+    await a(`/api/workspaces/${ws.id}/notes`, {
+      method: "POST",
+      body: JSON.stringify({ title: "Loose" })
+    })
+  ).json()).note;
+
+  // Tag one note; tags are created on the fly.
+  const setRes = await a(`/api/notes/${inFolder.id}/tags`, {
+    method: "PUT",
+    body: JSON.stringify({ tags: ["exam", "week-1"] })
+  });
+  assert.equal(setRes.status, 200);
+  const { tags } = await setRes.json();
+  assert.deepEqual(tags.map((t) => t.name).sort(), ["exam", "week-1"]);
+  const examTag = tags.find((t) => t.name === "exam");
+
+  // Filter by folder.
+  const byFolder = (await (await a(`/api/workspaces/${ws.id}/notes?folder=${folder.id}`)).json())
+    .notes;
+  assert.deepEqual(byFolder.map((n) => n.id), [inFolder.id]);
+
+  // Filter by "no folder".
+  const noFolder = (await (await a(`/api/workspaces/${ws.id}/notes?folder=none`)).json()).notes;
+  assert.equal(noFolder.some((n) => n.id === loose.id), true);
+  assert.equal(noFolder.some((n) => n.id === inFolder.id), false);
+
+  // Filter by tag.
+  const byTag = (await (await a(`/api/workspaces/${ws.id}/notes?tag=${examTag.id}`)).json()).notes;
+  assert.deepEqual(byTag.map((n) => n.id), [inFolder.id]);
+
+  // B sees none of A's folders/tags and cannot touch A's folder.
+  assert.equal((await b(`/api/workspaces/${ws.id}/folders`)).status, 404);
+  assert.equal(
+    (await b(`/api/folders/${folder.id}`, { method: "PATCH", body: JSON.stringify({ name: "x" }) }))
+      .status,
+    404
+  );
+  assert.equal((await b(`/api/tags/${examTag.id}`, { method: "DELETE" })).status, 404);
+
+  // Deleting a folder detaches its notes (they are not deleted).
+  assert.equal((await a(`/api/folders/${folder.id}`, { method: "DELETE" })).status, 200);
+  const afterDelete = (await (await a(`/api/notes/${inFolder.id}`)).json()).note;
+  assert.equal(afterDelete.folder_id, null);
+});

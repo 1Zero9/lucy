@@ -3,8 +3,11 @@ import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth/session";
 import { getDb } from "@/lib/db";
 import { getNote, listVersions } from "@/lib/db/notes";
+import { listFolders } from "@/lib/db/folders";
+import { listTags, tagsForNote } from "@/lib/db/tags";
 import { AppShell } from "@/components/app-shell";
 import { NoteEditor } from "@/components/note-editor";
+import { NoteMetaBar } from "@/components/note-meta-bar";
 
 export const metadata = { title: "Note · LUCY" };
 
@@ -15,7 +18,13 @@ export default async function NotePage({ params }: { params: Promise<{ id: strin
 
   const note = await getNote(db, user.id, id);
   if (!note) notFound();
-  const versions = await listVersions(db, user.id, id);
+
+  const [versions, folders, allTags, noteTags] = await Promise.all([
+    listVersions(db, user.id, id),
+    listFolders(db, user.id, note.workspace_id),
+    listTags(db, user.id, note.workspace_id),
+    tagsForNote(db, user.id, id)
+  ]);
 
   return (
     <AppShell active="notes">
@@ -24,6 +33,15 @@ export default async function NotePage({ params }: { params: Promise<{ id: strin
           ← All notes
         </Link>
       </p>
+      <NoteMetaBar
+        noteId={note.id}
+        initialColour={note.colour}
+        initialPinned={note.is_pinned === 1}
+        initialFolderId={note.folder_id}
+        folders={folders}
+        initialTags={noteTags}
+        allTags={allTags}
+      />
       <NoteEditor note={note} initialVersions={versions} />
     </AppShell>
   );

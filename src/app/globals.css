@@ -465,7 +465,194 @@ button, input, textarea { font: inherit; }
   padding: 12px 14px;
 }
 
+/* --- rich note experience (Phase 2) --- */
+
+.editor-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  padding: 6px;
+}
+
+.editor-toolbar button {
+  min-width: 32px;
+  min-height: 32px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  padding: 0 8px;
+}
+
+.editor-toolbar button:hover { background: var(--background); }
+.editor-toolbar .sep {
+  width: 1px;
+  align-self: stretch;
+  background: var(--border);
+  margin: 2px 4px;
+}
+
+.view-toggle { display: flex; gap: 2px; margin-left: auto; }
+.view-toggle button.on {
+  background: #EDE9FE;
+  color: #5B21B6;
+}
+
+.editor-panes.mode-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.note-preview {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  padding: 16px;
+  min-height: 60vh;
+  overflow: auto;
+}
+
+.md :first-child { margin-top: 0; }
+.md h1, .md h2, .md h3, .md h4 { line-height: 1.25; }
+.md h1 { font-size: 22px; }
+.md h2 { font-size: 19px; }
+.md h3 { font-size: 16px; }
+.md p, .md ul, .md ol, .md blockquote, .md pre { margin: 0 0 12px; }
+.md ul, .md ol { padding-left: 22px; }
+.md ul.md-tasks { list-style: none; padding-left: 4px; }
+.md ul.md-tasks li { display: flex; gap: 8px; align-items: baseline; }
+.md code {
+  background: var(--background);
+  border-radius: 6px;
+  padding: 1px 5px;
+  font-size: 0.92em;
+}
+.md pre {
+  background: var(--background);
+  border-radius: 10px;
+  padding: 12px;
+  overflow: auto;
+}
+.md pre code { background: none; padding: 0; }
+.md blockquote {
+  border-left: 3px solid var(--border);
+  margin-left: 0;
+  padding-left: 12px;
+  color: var(--muted);
+}
+.md a { color: var(--primary-strong); }
+.md hr { border: 0; border-top: 1px solid var(--border); margin: 16px 0; }
+
+.meta-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  padding: 10px 12px;
+  margin-bottom: 12px;
+}
+
+.meta-field { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+.meta-field select {
+  min-height: 34px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0 8px;
+  background: var(--surface);
+}
+
+.pin-toggle {
+  min-height: 34px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  padding: 0 12px;
+  cursor: pointer;
+  font-size: 13px;
+}
+.pin-toggle.on { background: #FEF9C3; border-color: #FDE68A; }
+
+.swatches { display: flex; gap: 4px; align-items: center; }
+.swatch {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 0;
+}
+.swatch.sel { border-color: var(--text); }
+.swatch.clear { background: var(--surface); border: 1px dashed var(--border); font-size: 11px; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 12px;
+}
+.chip.sm { margin-left: 6px; }
+.chip button {
+  border: 0;
+  background: none;
+  cursor: pointer;
+  color: var(--muted);
+  padding: 0;
+  line-height: 1;
+}
+.tags-field .chips input {
+  min-height: 30px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0 8px;
+  min-width: 120px;
+}
+
+.notes-filter { margin-bottom: 16px; display: grid; gap: 10px; }
+.chip-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.chip-btn {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 999px;
+  padding: 4px 12px;
+  min-height: 32px;
+  cursor: pointer;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.chip-btn.on { background: #EDE9FE; color: #5B21B6; border-color: #DDD6FE; }
+.chip-btn.folder button {
+  border: 0;
+  background: none;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  padding: 0;
+}
+.chip-row .inline-form input {
+  min-height: 32px;
+  border: 1px dashed var(--border);
+  border-radius: 999px;
+  padding: 0 12px;
+  background: var(--surface);
+}
+
 @media (max-width: 760px) {
+  .editor-panes.mode-split { grid-template-columns: 1fr; }
   .shell { display: block; }
   .sidebar {
     border-right: 0;

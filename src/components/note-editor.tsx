@@ -3,8 +3,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Note, NoteVersion } from "@/lib/db/notes";
+import { Markdown } from "@/components/markdown";
 
 type SaveState = "saved" | "dirty" | "saving" | "error";
+type Mode = "write" | "split" | "preview";
 
 const DEBOUNCE_MS = 1200;
 
@@ -37,14 +39,15 @@ export function NoteEditor({
   const [title, setTitle] = useState(note.title);
   const [text, setText] = useState(note.content_text);
   const [state, setState] = useState<SaveState>("saved");
+  const [mode, setMode] = useState<Mode>("write");
   const [versions, setVersions] = useState<NoteVersion[]>(initialVersions);
   const [showVersions, setShowVersions] = useState(false);
   const [preview, setPreview] = useState<NoteVersion | null>(null);
 
+  const bodyRef = useRef<HTMLTextAreaElement>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inFlight = useRef(false);
   const pending = useRef(false);
-  // Latest edited values, readable from async callbacks without stale closures.
   const latest = useRef({ title: note.title, text: note.content_text });
   const savedRef = useRef({ title: note.title, text: note.content_text });
 
@@ -83,7 +86,6 @@ export function NoteEditor({
           body: JSON.stringify({ ...snapshot, source })
         });
         savedRef.current = snapshot;
-        // Only claim "Saved" if nothing changed while the request was in flight.
         const stillCurrent =
           latest.current.title === snapshot.title && latest.current.text === snapshot.text;
         setState(stillCurrent ? "saved" : "dirty");
@@ -101,21 +103,51 @@ export function NoteEditor({
     [note.id, refreshVersions]
   );
 
-  function onEdit(next: { title?: string; text?: string }) {
-    if (next.title !== undefined) {
-      setTitle(next.title);
-      latest.current.title = next.title;
-    }
-    if (next.text !== undefined) {
-      setText(next.text);
-      latest.current.text = next.text;
-    }
+  const scheduleSave = useCallback(() => {
     setState("dirty");
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(() => void save("autosave"), DEBOUNCE_MS);
+  }, [save]);
+
+  function onTitle(v: string) {
+    setTitle(v);
+    latest.current.title = v;
+    scheduleSave();
+  }
+  function onText(v: string) {
+    setText(v);
+    latest.current.text = v;
+    scheduleSave();
   }
 
-  // Flush a pending edit when the tab is hidden or the page is unloading.
+  /** Toolbar: wrap the current selection, or insert at the caret. */
+  function surround(before: string, after = before, placeholder = "text") {
+    const el = bodyRef.current;
+    if (!el) return;
+    const { selectionStart: s, selectionEnd: e, value } = el;
+    const sel = value.slice(s, e) || placeholder;
+    const next = value.slice(0, s) + before + sel + after + value.slice(e);
+    onText(next);
+    requestAnimationFrame(() => {
+      el.focus();
+      el.selectionStart = s + before.length;
+      el.selectionEnd = s + before.length + sel.length;
+    });
+  }
+
+  function linePrefix(prefix: string) {
+    const el = bodyRef.current;
+    if (!el) return;
+    const { selectionStart: s, value } = el;
+    const lineStart = value.lastIndexOf("\n", s - 1) + 1;
+    const next = value.slice(0, lineStart) + prefix + value.slice(lineStart);
+    onText(next);
+    requestAnimationFrame(() => {
+      el.focus();
+      el.selectionStart = el.selectionEnd = s + prefix.length;
+    });
+  }
+
   useEffect(() => {
     function flush() {
       if (
@@ -185,7 +217,7 @@ export function NoteEditor({
           className="note-title"
           aria-label="Note title"
           value={title}
-          onChange={(e) => onEdit({ title: e.target.value })}
+          onChange={(e) => onTitle(e.target.value)}
           placeholder="Untitled note"
         />
         <div className="note-actions">
@@ -200,11 +232,7 @@ export function NoteEditor({
               </>
             ) : null}
           </span>
-          <button
-            className="linkish"
-            type="button"
-            onClick={() => setShowVersions((v) => !v)}
-          >
+          <button className="linkish" type="button" onClick={() => setShowVersions((v) => !v)}>
             History ({versions.length})
           </button>
           <button className="linkish danger" type="button" onClick={del}>
@@ -213,13 +241,68 @@ export function NoteEditor({
         </div>
       </div>
 
-      <textarea
-        className="note-body"
-        aria-label="Note"
-        value={text}
-        onChange={(e) => onEdit({ text: e.target.value })}
-        placeholder="Start writing…"
-      />
+      <div className="editor-toolbar" role="toolbar" aria-label="Formatting">
+        <button type="button" onClick={() => surround("**")} title="Bold">
+          <strong>B</strong>
+        </button>
+        <button type="button" onClick={() => surround("*")} title="Italic">
+          <em>I</em>
+        </button>
+        <button type="button" onClick={() => surround("`", "`", "code")} title="Inline code">
+          {"</>"}
+        </button>
+        <span className="sep" />
+        <button type="button" onClick={() => linePrefix("## ")} title="Heading">
+          H
+        </button>
+        <button type="button" onClick={() => linePrefix("- ")} title="Bullet list">
+          •
+        </button>
+        <button type="button" onClick={() => linePrefix("1. ")} title="Numbered list">
+          1.
+        </button>
+        <button type="button" onClick={() => linePrefix("- [ ] ")} title="Checklist">
+          ☑
+        </button>
+        <button type="button" onClick={() => linePrefix("> ")} title="Quote">
+          ❝
+        </button>
+        <button type="button" onClick={() => surround("[", "](https://)", "link")} title="Link">
+          🔗
+        </button>
+        <span className="sep" />
+        <span className="view-toggle" role="group" aria-label="View">
+          {(["write", "split", "preview"] as Mode[]).map((m) => (
+            <button
+              key={m}
+              type="button"
+              className={mode === m ? "on" : ""}
+              aria-pressed={mode === m}
+              onClick={() => setMode(m)}
+            >
+              {m[0].toUpperCase() + m.slice(1)}
+            </button>
+          ))}
+        </span>
+      </div>
+
+      <div className={`editor-panes mode-${mode}`}>
+        {mode !== "preview" ? (
+          <textarea
+            ref={bodyRef}
+            className="note-body"
+            aria-label="Note"
+            value={text}
+            onChange={(e) => onText(e.target.value)}
+            placeholder="Start writing… Markdown supported."
+          />
+        ) : null}
+        {mode !== "write" ? (
+          <div className="note-preview">
+            <Markdown source={text} />
+          </div>
+        ) : null}
+      </div>
 
       {showVersions ? (
         <aside className="versions">
