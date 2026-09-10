@@ -35,6 +35,18 @@ export function optionalString(value: unknown, opts: StrOpts): string | null {
   return requiredString(value, opts);
 }
 
+const MAX_NOTE_TEXT = 200_000;
+
+/** Note body: any string incl. empty; whitespace/newlines preserved (not trimmed). */
+export function noteText(value: unknown): string {
+  if (value === undefined || value === null) return "";
+  if (typeof value !== "string") throw new ValidationError("Note text must be a string.");
+  if (value.length > MAX_NOTE_TEXT) {
+    throw new ValidationError("Note is too long.");
+  }
+  return value;
+}
+
 const HEX_COLOUR = /^#[0-9a-fA-F]{6}$/;
 
 export function optionalColour(value: unknown, field = "colour"): string | null {

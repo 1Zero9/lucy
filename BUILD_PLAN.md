@@ -38,16 +38,16 @@
 **Exit:** A user can set up an arbitrary learning context without college-specific assumptions. — met
 
 ## Phase 1C — Safe notes
-- [ ] Note create/read/update
-- [ ] Debounced autosave
-- [ ] Visible save state
-- [ ] Note version snapshots
-- [ ] Soft delete
-- [ ] Recently Deleted
-- [ ] Restore
-- [ ] Cross-account isolation tests
+- [x] Note create/read/update
+- [x] Debounced autosave
+- [x] Visible save state
+- [x] Note version snapshots
+- [x] Soft delete
+- [x] Recently Deleted
+- [x] Restore
+- [x] Cross-account isolation tests
 
-**Exit:** Core MASTER.md note acceptance tests pass.
+**Exit:** Core MASTER.md note acceptance tests pass. — met (tests 6-13, 15)
 
 ## Phase 2 — Rich note experience
 - [ ] Rich text editor

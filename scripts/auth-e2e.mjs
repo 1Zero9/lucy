@@ -200,3 +200,102 @@ test("soft-deleted workspace disappears from the list and can be restored", asyn
   list = await (await a("/api/workspaces")).json();
   assert.equal(list.workspaces.some((w) => w.id === workspace.id), true);
 });
+
+async function makeWorkspace(client, name) {
+  const res = await client("/api/workspaces", {
+    method: "POST",
+    body: JSON.stringify({ name })
+  });
+  assert.equal(res.status, 201);
+  return (await res.json()).workspace;
+}
+
+test("notes are private to their owner", async () => {
+  const a = authed((await signUpJar("na")).header());
+  const b = authed((await signUpJar("nb")).header());
+  const ws = await makeWorkspace(a, "A notes workspace");
+
+  const created = await a(`/api/workspaces/${ws.id}/notes`, {
+    method: "POST",
+    body: JSON.stringify({ title: "Secret", text: "private thoughts" })
+  });
+  assert.equal(created.status, 201);
+  const { note } = await created.json();
+
+  assert.equal((await fetch(`${BASE}/api/notes/${note.id}`)).status, 401);
+  assert.equal((await b(`/api/notes/${note.id}`)).status, 404);
+  assert.equal(
+    (await b(`/api/notes/${note.id}`, { method: "PATCH", body: JSON.stringify({ text: "x" }) }))
+      .status,
+    404
+  );
+  assert.equal((await b(`/api/notes/${note.id}`, { method: "DELETE" })).status, 404);
+  assert.equal((await b(`/api/notes/${note.id}/versions`)).status, 404);
+
+  const aStill = await (await a(`/api/notes/${note.id}`)).json();
+  assert.equal(aStill.note.content_text, "private thoughts");
+});
+
+test("note delete moves it to Recently Deleted, and it can be restored", async () => {
+  const a = authed((await signUpJar("nd")).header());
+  const ws = await makeWorkspace(a, "Delete/restore");
+  const { note } = await (
+    await a(`/api/workspaces/${ws.id}/notes`, {
+      method: "POST",
+      body: JSON.stringify({ title: "Throwaway" })
+    })
+  ).json();
+
+  assert.equal((await a(`/api/notes/${note.id}`, { method: "DELETE" })).status, 200);
+
+  const live = await (await a(`/api/workspaces/${ws.id}/notes`)).json();
+  assert.equal(live.notes.some((n) => n.id === note.id), false);
+
+  const trashed = await (await a(`/api/workspaces/${ws.id}/notes?deleted=1`)).json();
+  assert.equal(trashed.notes.some((n) => n.id === note.id), true);
+
+  assert.equal((await a(`/api/notes/${note.id}/restore`, { method: "POST" })).status, 200);
+  const back = await (await a(`/api/workspaces/${ws.id}/notes`)).json();
+  assert.equal(back.notes.some((n) => n.id === note.id), true);
+});
+
+test("restoring an older version does not lose later history", async () => {
+  const a = authed((await signUpJar("nv")).header());
+  const ws = await makeWorkspace(a, "Versions");
+  const { note } = await (
+    await a(`/api/workspaces/${ws.id}/notes`, {
+      method: "POST",
+      body: JSON.stringify({ title: "V", text: "one" })
+    })
+  ).json();
+
+  // Manual saves force a snapshot each time: v1=one, v2=two, v3=three.
+  await a(`/api/notes/${note.id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ text: "two", source: "manual" })
+  });
+  await a(`/api/notes/${note.id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ text: "three", source: "manual" })
+  });
+
+  let versions = (await (await a(`/api/notes/${note.id}/versions`)).json()).versions;
+  assert.deepEqual(
+    versions.map((v) => v.version).sort((x, y) => x - y),
+    [1, 2, 3]
+  );
+
+  // Restore v1 ("one"). Current content becomes "one"; a new v4 is appended.
+  const restored = await (
+    await a(`/api/notes/${note.id}/versions/1/restore`, { method: "POST" })
+  ).json();
+  assert.equal(restored.note.content_text, "one");
+
+  versions = (await (await a(`/api/notes/${note.id}/versions`)).json()).versions;
+  const nums = versions.map((v) => v.version).sort((x, y) => x - y);
+  assert.deepEqual(nums, [1, 2, 3, 4], "v2 and v3 must survive the restore");
+  const v2 = versions.find((v) => v.version === 2);
+  const v3 = versions.find((v) => v.version === 3);
+  assert.equal(v2.content_text, "two");
+  assert.equal(v3.content_text, "three");
+});

@@ -343,6 +343,128 @@ button, input, textarea { font: inherit; }
   color: var(--muted);
 }
 
+/* --- notes (Phase 1C) --- */
+
+.note-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.note-list a {
+  display: grid;
+  gap: 4px;
+  text-decoration: none;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  padding: 14px 16px;
+}
+
+.note-list-title { font-weight: 600; }
+.note-list-snippet { font-size: 14px; }
+.note-list-meta { font-size: 12px; }
+
+.note-editor {
+  display: grid;
+  gap: 14px;
+}
+
+.note-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  background: transparent;
+  font-size: 22px;
+  font-weight: 700;
+  padding: 4px 0;
+}
+
+.note-title:focus-visible {
+  outline: none;
+  border-bottom-color: var(--primary);
+}
+
+.note-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.save-state { font-size: 13px; color: var(--muted); }
+.save-state.save-saved { color: var(--success); }
+.save-state.save-error { color: var(--error); }
+.save-state.save-saving { color: var(--muted); }
+
+.note-body {
+  width: 100%;
+  min-height: 60vh;
+  resize: vertical;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  padding: 16px;
+  line-height: 1.6;
+  font-family: inherit;
+}
+
+.versions {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  padding: 16px;
+}
+
+.version-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.version-list li {
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+.version-list li:first-child { border-top: 0; padding-top: 0; }
+
+.version-preview {
+  margin: 8px 0 0;
+  padding: 10px;
+  background: var(--background);
+  border-radius: 10px;
+  white-space: pre-wrap;
+  font-family: inherit;
+  font-size: 13px;
+  max-height: 220px;
+  overflow: auto;
+}
+
+.trash-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.trash-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  padding: 12px 14px;
+}
+
 @media (max-width: 760px) {
   .shell { display: block; }
   .sidebar {
