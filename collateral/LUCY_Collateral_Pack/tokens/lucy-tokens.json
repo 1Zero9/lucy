@@ -1,0 +1,7 @@
+{
+  "brand": {"primary":"#7C3AED","primaryStrong":"#4F46E5","secondary":"#06B6D4","accent":"#22D3EE"},
+  "semantic": {"success":"#16A34A","warning":"#F59E0B","error":"#EF4444","info":"#2563EB"},
+  "neutral": {"background":"#F8FAFC","surface":"#FFFFFF","border":"#E2E8F0","text":"#0F172A","muted":"#64748B"},
+  "typography": {"ui":"Inter","display":"Plus Jakarta Sans"},
+  "radius": {"sm":8,"md":12,"lg":18,"xl":24}
+}

@@ -1,0 +1,116 @@
+:root {
+  --primary: #7C3AED;
+  --primary-strong: #4F46E5;
+  --secondary: #06B6D4;
+  --accent: #22D3EE;
+  --success: #16A34A;
+  --warning: #F59E0B;
+  --error: #EF4444;
+  --info: #2563EB;
+  --background: #F8FAFC;
+  --surface: #FFFFFF;
+  --border: #E2E8F0;
+  --text: #0F172A;
+  --muted: #64748B;
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; padding: 0; }
+
+body {
+  background: var(--background);
+  color: var(--text);
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+a { color: inherit; }
+
+button, input, textarea { font: inherit; }
+
+.shell {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-columns: 240px 1fr;
+}
+
+.sidebar {
+  padding: 24px 16px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+}
+
+.brand {
+  font-weight: 800;
+  letter-spacing: .28em;
+  margin-bottom: 32px;
+}
+
+.nav {
+  display: grid;
+  gap: 8px;
+}
+
+.nav a {
+  text-decoration: none;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  border-radius: 12px;
+}
+
+.nav a:first-child {
+  background: #EDE9FE;
+  color: #5B21B6;
+}
+
+.main {
+  padding: 32px;
+  max-width: 1180px;
+  width: 100%;
+}
+
+.hero h1 { margin-bottom: 8px; }
+.hero p { color: var(--muted); margin-top: 0; }
+
+.search {
+  margin: 28px 0;
+  width: min(720px, 100%);
+  min-height: 48px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 0 16px;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  gap: 16px;
+}
+
+.card {
+  min-height: 140px;
+  padding: 20px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 18px;
+}
+
+.card h2 { font-size: 16px; margin-top: 0; }
+.card p { color: var(--muted); }
+
+@media (max-width: 760px) {
+  .shell { display: block; }
+  .sidebar {
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+    padding: 16px;
+  }
+  .brand { margin-bottom: 12px; }
+  .nav { grid-template-columns: repeat(4,1fr); }
+  .nav a { justify-content: center; padding: 0 6px; font-size: 13px; }
+  .main { padding: 22px 16px 88px; }
+  .cards { grid-template-columns: 1fr; }
+}

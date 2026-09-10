@@ -1,0 +1,32 @@
+{
+  "name": "lucy",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "cf:check": "npx vinext check",
+    "cf:init": "npx vinext init",
+    "cf:typegen": "npx wrangler types",
+    "db:migrate:local": "npx wrangler d1 migrations apply DB --local",
+    "db:migrate:dev": "npx wrangler d1 migrations apply DB --remote --env dev",
+    "db:migrate:prod": "./scripts/migrate-production.sh",
+    "infra:create": "./scripts/create-infra.sh",
+    "infra:list": "./scripts/list-infra.sh"
+  },
+  "dependencies": {
+    "next": "latest",
+    "react": "latest",
+    "react-dom": "latest"
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "typescript": "latest",
+    "wrangler": "latest",
+    "vinext": "latest"
+  }
+}
