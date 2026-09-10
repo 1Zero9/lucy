@@ -24,6 +24,13 @@ ISO-8601 TEXT, matching the rest of the schema.
 - Note content is now Markdown (`content_json` = `{"type":"markdown","text":…}`);
   `notes.colour` and `notes.is_pinned` (from 0001) are now surfaced by the app
 
+## Added in Phase 3 (`0004_attachments.sql`)
+
+- `attachments` — file metadata (id, workspace, optional note, `r2_key`,
+  filename, content type, size, soft delete). Bytes live in the R2 `FILES`
+  bucket; `r2_key` is server-generated and re-derived from an owner-scoped row
+  on every download, never trusted from the client.
+
 ## Later
 
 - `stickies`

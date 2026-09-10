@@ -22,6 +22,11 @@ function escapeHtml(s: string): string {
 
 function inline(escaped: string): string {
   let out = escaped;
+  // images: ![alt](url) — allow http(s) or same-origin paths only
+  out = out.replace(/!\[([^\]]*)\]\(([^)\s]+)\)/g, (m, alt: string, url: string) => {
+    if (!(/^https?:/i.test(url) || url.startsWith("/"))) return m;
+    return `<img src="${url}" alt="${alt}" loading="lazy" />`;
+  });
   // links: [text](url) — url is already HTML-escaped; allow safe schemes only
   out = out.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (m, text: string, url: string) => {
     const safe = /^(https?:|mailto:)/i.test(url) || url.startsWith("/") || url.startsWith("#");

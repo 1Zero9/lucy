@@ -5,9 +5,11 @@ import { getDb } from "@/lib/db";
 import { getNote, listVersions } from "@/lib/db/notes";
 import { listFolders } from "@/lib/db/folders";
 import { listTags, tagsForNote } from "@/lib/db/tags";
+import { listAttachments } from "@/lib/db/attachments";
 import { AppShell } from "@/components/app-shell";
 import { NoteEditor } from "@/components/note-editor";
 import { NoteMetaBar } from "@/components/note-meta-bar";
+import { AttachmentsManager } from "@/components/attachments-manager";
 
 export const metadata = { title: "Note · LUCY" };
 
@@ -19,11 +21,12 @@ export default async function NotePage({ params }: { params: Promise<{ id: strin
   const note = await getNote(db, user.id, id);
   if (!note) notFound();
 
-  const [versions, folders, allTags, noteTags] = await Promise.all([
+  const [versions, folders, allTags, noteTags, attachments] = await Promise.all([
     listVersions(db, user.id, id),
     listFolders(db, user.id, note.workspace_id),
     listTags(db, user.id, note.workspace_id),
-    tagsForNote(db, user.id, id)
+    tagsForNote(db, user.id, id),
+    listAttachments(db, user.id, note.workspace_id, { noteId: id })
   ]);
 
   return (
@@ -43,6 +46,11 @@ export default async function NotePage({ params }: { params: Promise<{ id: strin
         allTags={allTags}
       />
       <NoteEditor note={note} initialVersions={versions} />
+      <AttachmentsManager
+        workspaceId={note.workspace_id}
+        noteId={note.id}
+        initialAttachments={attachments}
+      />
     </AppShell>
   );
 }

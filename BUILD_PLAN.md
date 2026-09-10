@@ -58,11 +58,11 @@
 - [x] Continue/active notes (Home "Continue" list, pinned-first ordering)
 
 ## Phase 3 — Files
-- [ ] R2 upload
-- [ ] Private download route
-- [ ] Attachment metadata
-- [ ] File ownership tests
-- [ ] PDF/image handling
+- [x] R2 upload
+- [x] Private download route
+- [x] Attachment metadata
+- [x] File ownership tests
+- [x] PDF/image handling (inline for images/pdf/text; Markdown image embeds)
 
 ## Phase 4 — Quick organisation
 - [ ] Stickies

@@ -651,8 +651,68 @@ button, input, textarea { font: inherit; }
   background: var(--surface);
 }
 
+/* --- files (Phase 3) --- */
+
+.attachments { margin-top: 24px; }
+
+.file-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.file-list li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  padding: 10px 12px;
+}
+
+.file-thumb {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex: 0 0 auto;
+  background: var(--background);
+}
+
+.file-thumb-doc {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  border: 1px solid var(--border);
+}
+
+.file-meta {
+  display: grid;
+  gap: 2px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.file-meta a {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-meta .muted { font-size: 12px; }
+
+label.btn { display: inline-flex; align-items: center; cursor: pointer; }
+
 @media (max-width: 760px) {
   .editor-panes.mode-split { grid-template-columns: 1fr; }
+  .file-list li { flex-wrap: wrap; }
   .shell { display: block; }
   .sidebar {
     border-right: 0;

@@ -52,16 +52,19 @@ async function me(cookieHeader) {
 }
 
 function authed(cookieHeader) {
-  return (path, init = {}) =>
-    fetch(`${BASE}${path}`, {
+  return (path, init = {}) => {
+    // Let fetch set the multipart boundary itself for FormData bodies.
+    const isForm = init.body instanceof FormData;
+    return fetch(`${BASE}${path}`, {
       ...init,
       headers: {
-        "content-type": "application/json",
+        ...(isForm ? {} : { "content-type": "application/json" }),
         origin: BASE,
         cookie: cookieHeader,
         ...(init.headers ?? {})
       }
     });
+  };
 }
 
 async function signUpJar(suffix) {
@@ -387,4 +390,103 @@ test("folders and tags are workspace-scoped, private, and filter the note list",
   assert.equal((await a(`/api/folders/${folder.id}`, { method: "DELETE" })).status, 200);
   const afterDelete = (await (await a(`/api/notes/${inFolder.id}`)).json()).note;
   assert.equal(afterDelete.folder_id, null);
+});
+
+function uploadForm(bytes, filename, type, noteId) {
+  const form = new FormData();
+  form.set("file", new File([bytes], filename, { type }));
+  if (noteId) form.set("noteId", noteId);
+  return form;
+}
+
+test("files: upload, private download, ownership, soft delete, purge", async () => {
+  const a = authed((await signUpJar("fa1")).header());
+  const b = authed((await signUpJar("fb1")).header());
+  const ws = await makeWorkspace(a, "Files ws");
+
+  const bytes = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 1, 2, 3, 4, 5]); // PNG-ish
+  const up = await a(`/api/workspaces/${ws.id}/attachments`, {
+    method: "POST",
+    body: uploadForm(bytes, "diagram.png", "image/png")
+  });
+  assert.equal(up.status, 201);
+  const { attachment } = await up.json();
+  assert.equal(attachment.filename, "diagram.png");
+  assert.equal(attachment.content_type, "image/png");
+  assert.equal(attachment.size_bytes, bytes.length);
+
+  // Owner download returns the exact bytes and the right headers.
+  const dl = await a(`/api/attachments/${attachment.id}/download`);
+  assert.equal(dl.status, 200);
+  assert.equal(dl.headers.get("content-type"), "image/png");
+  assert.match(dl.headers.get("content-disposition") ?? "", /diagram\.png/);
+  const got = new Uint8Array(await dl.arrayBuffer());
+  assert.deepEqual([...got], [...bytes], "downloaded bytes must match the upload");
+
+  // Anonymous and other-user access is refused.
+  assert.equal((await fetch(`${BASE}/api/attachments/${attachment.id}/download`)).status, 401);
+  assert.equal((await b(`/api/attachments/${attachment.id}`)).status, 404);
+  assert.equal((await b(`/api/attachments/${attachment.id}/download`)).status, 404);
+  assert.equal((await b(`/api/attachments/${attachment.id}`, { method: "DELETE" })).status, 404);
+  assert.equal((await b(`/api/workspaces/${ws.id}/attachments`)).status, 404);
+
+  // Disallowed type and empty file are rejected.
+  assert.equal(
+    (await a(`/api/workspaces/${ws.id}/attachments`, {
+      method: "POST",
+      body: uploadForm(new Uint8Array([1, 2, 3]), "x.exe", "application/x-msdownload")
+    })).status,
+    415
+  );
+  assert.equal(
+    (await a(`/api/workspaces/${ws.id}/attachments`, {
+      method: "POST",
+      body: uploadForm(new Uint8Array([]), "empty.png", "image/png")
+    })).status,
+    400
+  );
+
+  // Soft delete -> gone from the live list, present in ?deleted=1, restorable.
+  assert.equal((await a(`/api/attachments/${attachment.id}`, { method: "DELETE" })).status, 200);
+  let list = await (await a(`/api/workspaces/${ws.id}/attachments`)).json();
+  assert.equal(list.attachments.some((x) => x.id === attachment.id), false);
+  let trash = await (await a(`/api/workspaces/${ws.id}/attachments?deleted=1`)).json();
+  assert.equal(trash.attachments.some((x) => x.id === attachment.id), true);
+  assert.equal((await a(`/api/attachments/${attachment.id}/restore`, { method: "POST" })).status, 200);
+
+  // Purge removes the row and the object (download 404 afterwards).
+  await a(`/api/attachments/${attachment.id}`, { method: "DELETE" });
+  assert.equal((await a(`/api/attachments/${attachment.id}/purge`, { method: "POST" })).status, 200);
+  assert.equal((await a(`/api/attachments/${attachment.id}`)).status, 404);
+  assert.equal((await a(`/api/attachments/${attachment.id}/download`)).status, 404);
+});
+
+test("files: a note-scoped upload is listed under that note only", async () => {
+  const a = authed((await signUpJar("fa2")).header());
+  const ws = await makeWorkspace(a, "Note files");
+  const { note } = await (
+    await a(`/api/workspaces/${ws.id}/notes`, {
+      method: "POST",
+      body: JSON.stringify({ title: "Has files" })
+    })
+  ).json();
+
+  const up = await a(`/api/workspaces/${ws.id}/attachments`, {
+    method: "POST",
+    body: uploadForm(new TextEncoder().encode("hello"), "notes.txt", "text/plain", note.id)
+  });
+  assert.equal(up.status, 201);
+  const { attachment } = await up.json();
+  assert.equal(attachment.note_id, note.id);
+
+  const scoped = await (await a(`/api/workspaces/${ws.id}/attachments?noteId=${note.id}`)).json();
+  assert.deepEqual(scoped.attachments.map((x) => x.id), [attachment.id]);
+
+  // A note-id from another workspace is rejected.
+  const other = await makeWorkspace(a, "Elsewhere");
+  const bad = await a(`/api/workspaces/${other.id}/attachments`, {
+    method: "POST",
+    body: uploadForm(new TextEncoder().encode("x"), "x.txt", "text/plain", note.id)
+  });
+  assert.equal(bad.status, 400);
 });
