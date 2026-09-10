@@ -1,0 +1,2 @@
+BETTER_AUTH_SECRET=replace-with-a-32-byte-random-string
+BETTER_AUTH_URL=http://localhost:3001

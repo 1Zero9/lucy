@@ -4,13 +4,18 @@ The first migration implements only foundation entities. Future objects are docu
 
 ## Foundation
 
-- `users`
+- `users` — identity table, owned by Better Auth (migration `0002_auth.sql`)
+- `sessions`, `accounts`, `verifications` — Better Auth (migration `0002_auth.sql`)
 - `user_settings`
 - `workspaces`
 - `periods`
 - `modules`
 - `notes`
 - `note_versions`
+
+Better Auth tables keep that library's column names (camelCase mapped to
+snake_case in `src/lib/auth/auth.ts`); booleans are `0/1` INTEGER and dates are
+ISO-8601 TEXT, matching the rest of the schema.
 
 ## Later
 
