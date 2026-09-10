@@ -51,6 +51,31 @@ async function me(cookieHeader) {
   });
 }
 
+function authed(cookieHeader) {
+  return (path, init = {}) =>
+    fetch(`${BASE}${path}`, {
+      ...init,
+      headers: {
+        "content-type": "application/json",
+        origin: BASE,
+        cookie: cookieHeader,
+        ...(init.headers ?? {})
+      }
+    });
+}
+
+async function signUpJar(suffix) {
+  const j = jar();
+  const res = await signUp({
+    name: `User ${suffix}`,
+    email: `${suffix}+${stamp}@example.test`,
+    password: "a-sufficiently-long-password"
+  });
+  assert.ok(res.ok, `sign-up ${suffix} failed: ${res.status} ${await res.text()}`);
+  j.absorb(res);
+  return j;
+}
+
 test("anonymous request to a protected endpoint is rejected", async () => {
   const res = await me();
   assert.equal(res.status, 401);
@@ -110,4 +135,68 @@ test("signing out invalidates the session", async () => {
   a.absorb(out);
 
   assert.equal((await me(a.header())).status, 401);
+});
+
+test("workspaces and modules are private to their owner", async () => {
+  const a = authed((await signUpJar("wa")).header());
+  const b = authed((await signUpJar("wb")).header());
+
+  // Anonymous cannot list workspaces.
+  assert.equal((await fetch(`${BASE}/api/workspaces`)).status, 401);
+
+  // A creates a workspace and a module in it.
+  const wsRes = await a("/api/workspaces", {
+    method: "POST",
+    body: JSON.stringify({ name: "A private workspace", purpose: "testing" })
+  });
+  assert.equal(wsRes.status, 201);
+  const { workspace } = await wsRes.json();
+
+  const modRes = await a(`/api/workspaces/${workspace.id}/modules`, {
+    method: "POST",
+    body: JSON.stringify({ name: "A private module" })
+  });
+  assert.equal(modRes.status, 201);
+  const { module } = await modRes.json();
+
+  // A sees them.
+  const aList = await (await a("/api/workspaces")).json();
+  assert.ok(aList.workspaces.some((w) => w.id === workspace.id));
+
+  // B sees nothing of A's, by any route or verb.
+  const bList = await (await b("/api/workspaces")).json();
+  assert.equal(
+    bList.workspaces.some((w) => w.id === workspace.id),
+    false,
+    "B must not see A's workspace in the list"
+  );
+  assert.equal((await b(`/api/workspaces/${workspace.id}`)).status, 404);
+  assert.equal((await b(`/api/workspaces/${workspace.id}/modules`)).status, 404);
+  assert.equal(
+    (await b(`/api/modules/${module.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ name: "hijacked" })
+    })).status,
+    404
+  );
+  assert.equal((await b(`/api/workspaces/${workspace.id}`, { method: "DELETE" })).status, 404);
+
+  // A's module is untouched.
+  const stillThere = await (await a(`/api/workspaces/${workspace.id}/modules`)).json();
+  assert.equal(stillThere.modules[0].name, "A private module");
+});
+
+test("soft-deleted workspace disappears from the list and can be restored", async () => {
+  const a = authed((await signUpJar("wr")).header());
+  const { workspace } = await (
+    await a("/api/workspaces", { method: "POST", body: JSON.stringify({ name: "Temp" }) })
+  ).json();
+
+  assert.equal((await a(`/api/workspaces/${workspace.id}`, { method: "DELETE" })).status, 200);
+  let list = await (await a("/api/workspaces")).json();
+  assert.equal(list.workspaces.some((w) => w.id === workspace.id), false);
+
+  assert.equal((await a(`/api/workspaces/${workspace.id}/restore`, { method: "POST" })).status, 200);
+  list = await (await a("/api/workspaces")).json();
+  assert.equal(list.workspaces.some((w) => w.id === workspace.id), true);
 });

@@ -16,26 +16,26 @@
 **Exit:** Cloudflare development deployment can read/write the dev D1 only.
 
 ## Phase 1A — Identity
-- [ ] Integrate maintained auth library
-- [ ] User schema
-- [ ] Signup
-- [ ] Login
-- [ ] Logout
-- [ ] Protected app shell
-- [ ] Profile/settings
-- [ ] Security tests for anonymous access
+- [x] Integrate maintained auth library
+- [x] User schema
+- [x] Signup
+- [x] Login
+- [x] Logout
+- [x] Protected app shell
+- [x] Profile/settings
+- [x] Security tests for anonymous access
 
-**Exit:** Two test accounts can authenticate independently.
+**Exit:** Two test accounts can authenticate independently. — met
 
 ## Phase 1B — Flexible learning structure
-- [ ] Workspace CRUD
-- [ ] Optional period support
-- [ ] Module/subject CRUD
-- [ ] Course-agnostic onboarding
-- [ ] Responsive Home
-- [ ] Responsive Modules view
+- [x] Workspace CRUD
+- [x] Optional period support (list / create / soft delete)
+- [x] Module/subject CRUD
+- [x] Course-agnostic onboarding
+- [x] Responsive Home
+- [x] Responsive Modules view
 
-**Exit:** A user can set up an arbitrary learning context without college-specific assumptions.
+**Exit:** A user can set up an arbitrary learning context without college-specific assumptions. — met
 
 ## Phase 1C — Safe notes
 - [ ] Note create/read/update
