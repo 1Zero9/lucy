@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "vinext dev --port 3001",
+    "dev:next": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -14,19 +15,30 @@
     "db:migrate:dev": "npx wrangler d1 migrations apply DB --remote --env dev",
     "db:migrate:prod": "./scripts/migrate-production.sh",
     "infra:create": "./scripts/create-infra.sh",
-    "infra:list": "./scripts/list-infra.sh"
+    "infra:list": "./scripts/list-infra.sh",
+    "dev:vinext": "vinext dev --port 3001",
+    "build:vinext": "vinext build",
+    "start:vinext": "wrangler dev --config dist/server/wrangler.json",
+    "deploy:vinext": "vinext-cloudflare deploy --config dist/server/wrangler.json"
   },
   "dependencies": {
+    "@vinext/cloudflare": "^1.0.0-beta.7",
     "next": "latest",
     "react": "latest",
-    "react-dom": "latest"
+    "react-dom": "latest",
+    "react-server-dom-webpack": "^19.3.0"
   },
   "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.54.7",
     "@types/node": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
+    "@vitejs/plugin-react": "^6.1.1",
+    "@vitejs/plugin-rsc": "^0.5.34",
     "typescript": "latest",
-    "wrangler": "latest",
-    "vinext": "latest"
-  }
+    "vinext": "latest",
+    "vite": "^8.3.0",
+    "wrangler": "latest"
+  },
+  "type": "module"
 }

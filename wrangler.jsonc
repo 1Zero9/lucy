@@ -1,43 +1,58 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "lucy",
-  "compatibility_date": "2026-09-10",
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "lucy",
+	"compatibility_date": "2026-09-10",
 
-  // Run `npm run cf:init` after npm install so vinext can augment/generate
-  // the exact Worker entry/build settings for the current vinext release.
+	// Worker entry / assets / cache are generated and maintained by `vinext init`
+	// (Cloudflare platform target). Re-run `npm run cf:init` after a vinext upgrade.
+	"main": "vinext/server/fetch-handler",
+	"assets": {
+		"directory": "dist/client",
+		"not_found_handling": "none",
+		"binding": "ASSETS"
+	},
+	"cache": { "enabled": true },
+	"version_metadata": { "binding": "CF_VERSION_METADATA" },
 
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "lucy",
-      "database_id": "REPLACE_WITH_PRODUCTION_D1_ID",
-      "migrations_dir": "migrations"
-    }
-  ],
+	// Bindings (see docs/ARCHITECTURE.md):
+	//   DB    -> Cloudflare D1  (structured data)
+	//   FILES -> Cloudflare R2  (private file objects)
+	//
+	// Top-level config targets PRODUCTION resources. `npm run dev` and
+	// `npm run db:migrate:local` operate on a local emulated copy (--local),
+	// never the remote production `lucy` database. Remote development uses the
+	// `dev` environment below (`--env dev`) against `lucy-dev` / `lucy-files-dev`.
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "lucy",
+			"database_id": "0386dac1-6088-421f-9a3b-456a7c98c54e",
+			"migrations_dir": "migrations"
+		}
+	],
+	"r2_buckets": [
+		{
+			"binding": "FILES",
+			"bucket_name": "lucy-files"
+		}
+	],
 
-  "r2_buckets": [
-    {
-      "binding": "FILES",
-      "bucket_name": "lucy-files"
-    }
-  ],
-
-  "env": {
-    "dev": {
-      "d1_databases": [
-        {
-          "binding": "DB",
-          "database_name": "lucy-dev",
-          "database_id": "REPLACE_WITH_DEV_D1_ID",
-          "migrations_dir": "migrations"
-        }
-      ],
-      "r2_buckets": [
-        {
-          "binding": "FILES",
-          "bucket_name": "lucy-files-dev"
-        }
-      ]
-    }
-  }
+	"env": {
+		"dev": {
+			"d1_databases": [
+				{
+					"binding": "DB",
+					"database_name": "lucy-dev",
+					"database_id": "8efb5075-a03f-4baa-abc1-9be2d9ad9a15",
+					"migrations_dir": "migrations"
+				}
+			],
+			"r2_buckets": [
+				{
+					"binding": "FILES",
+					"bucket_name": "lucy-files-dev"
+				}
+			]
+		}
+	}
 }
