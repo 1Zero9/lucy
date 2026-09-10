@@ -38,6 +38,19 @@ ISO-8601 TEXT, matching the rest of the schema.
   open|done, optional link to a module or note. Reminders are in-app only (no
   push/email delivery); due views group by `src/lib/due.ts`.
 
+## Added in Phase 6 (`0006_learning_tools.sql`)
+
+- `research_items` — saved source (title, url, kind, Markdown annotation),
+  optional link to a module / note
+- `flashcards` — front/back plus SM-2 state (`ease`, `interval_days`, `reps`,
+  `lapses`, `due_at`, `last_reviewed_at`); `due_at IS NULL` = new. Scheduling
+  lives in `src/lib/srs.ts`; review queue = new or `due_at <= now`.
+- `drawings` — sketch metadata; the PNG lives in the R2 `FILES` bucket under a
+  server-generated `r2_key` (same private-download rule as attachments)
+
+Search adds no schema — it is query-time owner + workspace scoped `LIKE`
+(`src/lib/db/search.ts`).
+
 ## Later
 - `tasks`
 - `attachments`

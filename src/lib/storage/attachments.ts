@@ -10,6 +10,11 @@ export function attachmentKey(userId: string, attachmentId: string): string {
   return `att/${userId}/${attachmentId}`;
 }
 
+/** Storage key for a drawing's PNG. Same rule: authority is the D1 row. */
+export function drawingKey(userId: string, drawingId: string): string {
+  return `draw/${userId}/${drawingId}`;
+}
+
 export async function putObject(
   key: string,
   body: ArrayBuffer,

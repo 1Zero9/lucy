@@ -665,3 +665,184 @@ test("offline sync: stale write conflicts, and the losing edit is kept as histor
     404
   );
 });
+
+test("search finds notes and tasks in the active workspace, term-ANDed", async () => {
+  const a = authed((await signUpJar("se")).header());
+  const ws = await makeWorkspace(a, "Bio");
+  await a(`/api/workspaces/${ws.id}/notes`, {
+    method: "POST",
+    body: JSON.stringify({ title: "Photosynthesis", text: "light reactions in the chloroplast stroma" })
+  });
+  await a(`/api/workspaces/${ws.id}/tasks`, {
+    method: "POST",
+    body: JSON.stringify({ title: "Label a chloroplast diagram" })
+  });
+
+  assert.equal((await fetch(`${BASE}/api/search?q=chloroplast`)).status, 401);
+
+  const r = await (await a(`/api/search?q=chloroplast`)).json();
+  assert.equal(r.results.note.length, 1);
+  assert.equal(r.results.task.length, 1);
+
+  // Two terms must both match — "chloroplast diagram" hits only the task.
+  const r2 = await (await a(`/api/search?q=chloroplast%20diagram`)).json();
+  assert.equal(r2.results.note.length, 0);
+  assert.equal(r2.results.task.length, 1);
+
+  const empty = await (await a(`/api/search?q=`)).json();
+  assert.equal(empty.results, null);
+});
+
+test("research items: CRUD, annotation, isolation", async () => {
+  const a = authed((await signUpJar("ra")).header());
+  const b = authed((await signUpJar("rb")).header());
+  const ws = await makeWorkspace(a, "Research ws");
+
+  const created = await a(`/api/workspaces/${ws.id}/research`, {
+    method: "POST",
+    body: JSON.stringify({ title: "Khan Academy: cells", url: "https://khanacademy.org" })
+  });
+  assert.equal(created.status, 201);
+  const { item } = await created.json();
+  assert.equal(item.kind, "link");
+
+  const patched = await (
+    await a(`/api/research/${item.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ annotation: "**Watch** section 2 first." })
+    })
+  ).json();
+  assert.equal(patched.item.annotation, "**Watch** section 2 first.");
+
+  assert.equal((await b(`/api/workspaces/${ws.id}/research`)).status, 404);
+  assert.equal(
+    (await b(`/api/research/${item.id}`, { method: "PATCH", body: JSON.stringify({ title: "x" }) }))
+      .status,
+    404
+  );
+
+  assert.equal((await a(`/api/research/${item.id}`, { method: "DELETE" })).status, 200);
+  assert.equal(
+    (await (await a(`/api/workspaces/${ws.id}/research`)).json()).items.length,
+    0
+  );
+  assert.equal((await a(`/api/research/${item.id}/restore`, { method: "POST" })).status, 200);
+});
+
+test("flashcards: create, review scheduling, due queue, isolation", async () => {
+  const a = authed((await signUpJar("fca")).header());
+  const b = authed((await signUpJar("fcb")).header());
+  const ws = await makeWorkspace(a, "Cards ws");
+
+  const created = await a(`/api/workspaces/${ws.id}/flashcards`, {
+    method: "POST",
+    body: JSON.stringify({ front: "Capital of France?", back: "Paris" })
+  });
+  assert.equal(created.status, 201);
+  const { card } = await created.json();
+  assert.equal(card.due_at, null, "a new card has no due date");
+  assert.equal(card.reps, 0);
+
+  // New card shows in the due queue.
+  let due = (await (await a(`/api/workspaces/${ws.id}/flashcards/due`)).json()).cards;
+  assert.equal(due.some((c) => c.id === card.id), true);
+
+  // "good" schedules it into the future and counts a rep.
+  const good = await (
+    await a(`/api/flashcards/${card.id}/review`, {
+      method: "POST",
+      body: JSON.stringify({ grade: "good" })
+    })
+  ).json();
+  assert.equal(good.card.reps, 1);
+  assert.ok(good.card.due_at && Date.parse(good.card.due_at) > Date.now());
+
+  // Now it's no longer due.
+  due = (await (await a(`/api/workspaces/${ws.id}/flashcards/due`)).json()).cards;
+  assert.equal(due.some((c) => c.id === card.id), false);
+
+  // "again" lapses it and brings it back soon.
+  const again = await (
+    await a(`/api/flashcards/${card.id}/review`, {
+      method: "POST",
+      body: JSON.stringify({ grade: "again" })
+    })
+  ).json();
+  assert.equal(again.card.lapses, 1);
+  assert.equal(again.card.reps, 0);
+
+  assert.equal(
+    (await a(`/api/flashcards/${card.id}/review`, { method: "POST", body: JSON.stringify({ grade: "wat" }) }))
+      .status,
+    400
+  );
+  assert.equal((await b(`/api/flashcards/${card.id}`)).status, 404);
+  assert.equal(
+    (await b(`/api/flashcards/${card.id}/review`, { method: "POST", body: JSON.stringify({ grade: "good" }) }))
+      .status,
+    404
+  );
+});
+
+function pngForm(bytes, title) {
+  const form = new FormData();
+  form.set("file", new File([bytes], "d.png", { type: "image/png" }));
+  form.set("width", "1280");
+  form.set("height", "800");
+  if (title) form.set("title", title);
+  return form;
+}
+
+test("drawings: upload PNG, private download, replace, isolation", async () => {
+  const a = authed((await signUpJar("da")).header());
+  const b = authed((await signUpJar("db")).header());
+  const ws = await makeWorkspace(a, "Sketch ws");
+  const png = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 9, 8, 7, 6]);
+
+  const created = await a(`/api/workspaces/${ws.id}/drawings`, {
+    method: "POST",
+    body: pngForm(png, "Cell diagram")
+  });
+  assert.equal(created.status, 201);
+  const { drawing } = await created.json();
+  assert.equal(drawing.title, "Cell diagram");
+
+  const dl = await a(`/api/drawings/${drawing.id}/download`);
+  assert.equal(dl.status, 200);
+  assert.equal(dl.headers.get("content-type"), "image/png");
+  assert.deepEqual([...new Uint8Array(await dl.arrayBuffer())], [...png]);
+
+  // Replace the bytes.
+  const png2 = new Uint8Array([137, 80, 78, 71, 1, 1, 1, 1]);
+  const replaced = await a(`/api/drawings/${drawing.id}`, { method: "PATCH", body: pngForm(png2) });
+  assert.equal(replaced.status, 200);
+  assert.deepEqual(
+    [...new Uint8Array(await (await a(`/api/drawings/${drawing.id}/download`)).arrayBuffer())],
+    [...png2]
+  );
+
+  // Rename via JSON.
+  const renamed = await (
+    await a(`/api/drawings/${drawing.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ title: "Renamed" })
+    })
+  ).json();
+  assert.equal(renamed.drawing.title, "Renamed");
+
+  // Isolation.
+  assert.equal((await fetch(`${BASE}/api/drawings/${drawing.id}/download`)).status, 401);
+  assert.equal((await b(`/api/drawings/${drawing.id}/download`)).status, 404);
+  assert.equal((await b(`/api/workspaces/${ws.id}/drawings`)).status, 404);
+
+  // A non-PNG upload is rejected.
+  const badForm = new FormData();
+  badForm.set("file", new File([new Uint8Array([1, 2, 3])], "x.jpg", { type: "image/jpeg" }));
+  assert.equal(
+    (await a(`/api/workspaces/${ws.id}/drawings`, { method: "POST", body: badForm })).status,
+    415
+  );
+
+  assert.equal((await a(`/api/drawings/${drawing.id}`, { method: "DELETE" })).status, 200);
+  assert.equal((await a(`/api/drawings/${drawing.id}/restore`, { method: "POST" })).status, 200);
+});

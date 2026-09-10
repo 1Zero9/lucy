@@ -84,11 +84,12 @@
 Scope: notes only. Tasks / stickies / files remain online-only for now.
 
 ## Phase 6 — Learning tools
-- [ ] Search
-- [ ] Drawing
-- [ ] Research
-- [ ] Flashcards
-- [ ] Revision
+- [x] Search (query-time LIKE across notes/tasks/stickies/modules/research/
+      flashcards, owner + active-workspace scoped; no semantic/vector)
+- [x] Drawing (freehand canvas -> PNG in R2, private download)
+- [x] Research (saved sources with Markdown annotations)
+- [x] Flashcards (front/back, per-module, light SM-2 state)
+- [x] Revision (due queue + reveal + Again/Hard/Good/Easy grading)
 
 ## Phase 7 — Intelligence
 Only after explicit owner approval.

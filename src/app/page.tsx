@@ -50,7 +50,14 @@ export default async function Page() {
         <p>{active.purpose ?? "Capture. Organise. Learn. Succeed."}</p>
       </section>
 
-      <input className="search" aria-label="Search" placeholder="Search anything…" disabled />
+      <form action="/search">
+        <input
+          className="search"
+          name="q"
+          aria-label="Search"
+          placeholder="Search anything in this workspace…"
+        />
+      </form>
 
       <div className="home-cols">
         <div>
