@@ -37,8 +37,21 @@
 		}
 	],
 
+	// Remote development environment. Deploy with `npm run deploy:dev`
+	// (Worker name becomes `lucy-dev`). Wrangler does NOT inherit `assets` /
+	// `version_metadata` / `main` into named environments, so they are repeated
+	// here to match the top level; keep them in sync when `vinext init` changes
+	// the top-level values.
 	"env": {
 		"dev": {
+			"main": "vinext/server/fetch-handler",
+			"assets": {
+				"directory": "dist/client",
+				"not_found_handling": "none",
+				"binding": "ASSETS"
+			},
+			"cache": { "enabled": true },
+			"version_metadata": { "binding": "CF_VERSION_METADATA" },
 			"d1_databases": [
 				{
 					"binding": "DB",

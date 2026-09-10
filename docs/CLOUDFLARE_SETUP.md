@@ -77,4 +77,32 @@ npm run cf:typegen
 
 ## Deploy
 
-Development and production deployment details should be added only after account/domain configuration is known. Do not make production the default deploy command.
+vinext builds the Worker and hands it to Wrangler. Each command rebuilds first.
+
+Development (Worker `lucy-dev`, bindings `lucy-dev` / `lucy-files-dev`):
+
+```bash
+npm run deploy:dev
+```
+
+Production (Worker `lucy`, bindings `lucy` / `lucy-files`) — never the default:
+
+```bash
+npm run deploy:vinext
+```
+
+Both read `wrangler.jsonc`; `deploy:dev` selects the `env.dev` block, which
+repeats `main` / `assets` / `cache` / `version_metadata` from the top level
+because Wrangler does not inherit those into named environments.
+
+### Secrets
+
+`BETTER_AUTH_SECRET` must be set per environment before that environment can
+authenticate:
+
+```bash
+npx wrangler secret put BETTER_AUTH_SECRET --env dev     # lucy-dev  (done)
+npx wrangler secret put BETTER_AUTH_SECRET               # production lucy
+```
+
+Local development reads it from `.dev.vars` instead.
