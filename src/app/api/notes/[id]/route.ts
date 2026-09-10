@@ -2,6 +2,7 @@ import { withUser, readJsonBody, jsonError } from "@/lib/api";
 import { getDb } from "@/lib/db";
 import { getNote, updateNote, softDeleteNote } from "@/lib/db/notes";
 import { getFolder } from "@/lib/db/folders";
+import { isConflict } from "@/lib/offline/conflict";
 import {
   asObject,
   optionalString,
@@ -24,6 +25,13 @@ export const PATCH = withUser(async (user, request, { params }) => {
 
   const note = await getNote(db, user.id, id);
   if (!note) return jsonError(404, "Note not found.");
+
+  // Offline sync: the caller made this edit against `ifUnmodifiedSince`. If the
+  // note has moved on since, another device wrote to it — report the conflict
+  // with the current server note so the client can preserve the local edit.
+  if (typeof body.ifUnmodifiedSince === "string" && isConflict(body.ifUnmodifiedSince, note.updated_at)) {
+    return Response.json({ error: "conflict", note }, { status: 409 });
+  }
 
   const patch: {
     title?: string;

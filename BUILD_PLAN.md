@@ -71,13 +71,17 @@
 - [x] Calendar-oriented due views (Overdue / Today / Next 7 days / Later / No date)
 
 ## Phase 5 — Offline reliability
-- [ ] IndexedDB
-- [ ] Local write-first path
-- [ ] Pending sync queue
-- [ ] Reconnect sync
-- [ ] Conflict strategy
-- [ ] Offline UX
-- [ ] Multi-device tests
+- [x] IndexedDB (src/lib/offline/store.ts — note cache + mutation queue)
+- [x] Local write-first path (note edits cache locally, then queue a sync)
+- [x] Pending sync queue (FIFO, collapses rapid edits, rebases after each sync)
+- [x] Reconnect sync (online / visibility / 20s interval / load triggers)
+- [x] Conflict strategy (ifUnmodifiedSince -> 409; losing edit kept as an
+      'import' version, server copy adopted, quiet banner)
+- [x] Offline UX (OfflineBar, offline-aware save states, minimal PWA + SW)
+- [x] Multi-device tests (API-level: 409 conflict + history preservation,
+      second-session visibility)
+
+Scope: notes only. Tasks / stickies / files remain online-only for now.
 
 ## Phase 6 — Learning tools
 - [ ] Search

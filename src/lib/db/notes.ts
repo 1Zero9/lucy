@@ -26,7 +26,7 @@ export type NoteVersion = {
   created_at: string;
 };
 
-export type NoteSource = "create" | "autosave" | "manual" | "restore";
+export type NoteSource = "create" | "autosave" | "manual" | "restore" | "import";
 
 const NOTE_COLUMNS =
   "id, workspace_id, module_id, folder_id, title, content_json, content_text, colour, is_pinned, current_version, created_at, updated_at, deleted_at";
@@ -302,6 +302,53 @@ export async function listVersions(
     .bind(noteId, userId)
     .all<NoteVersion>();
   return results;
+}
+
+/**
+ * Append a version snapshot with the given content WITHOUT changing the live
+ * note. Used by the offline sync layer to preserve a losing edit as history
+ * when another device has already written to the note (MASTER.md — never lose
+ * offline work).
+ */
+export async function snapshotVersion(
+  db: D1Database,
+  userId: string,
+  noteId: string,
+  content: { title: string; text: string },
+  source: NoteSource = "import"
+): Promise<NoteVersion | null> {
+  const note = await getNote(db, userId, noteId, { includeDeleted: true });
+  if (!note) return null;
+
+  const max = await db
+    .prepare(
+      `SELECT version FROM note_versions WHERE note_id = ? AND user_id = ? ORDER BY version DESC LIMIT 1`
+    )
+    .bind(noteId, userId)
+    .first<{ version: number }>();
+  const version = (max?.version ?? note.current_version) + 1;
+  const ts = nowIso();
+  const title = content.title.trim() || "Untitled note";
+  const id = newId();
+
+  await db
+    .prepare(
+      `INSERT INTO note_versions
+        (id, note_id, user_id, version, title, content_json, content_text, created_at, source)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    )
+    .bind(id, noteId, userId, version, title, toContentJson(content.text), content.text, ts, source)
+    .run();
+
+  return {
+    id,
+    version,
+    title,
+    content_text: content.text,
+    content_json: toContentJson(content.text),
+    source,
+    created_at: ts
+  };
 }
 
 /**

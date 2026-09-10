@@ -594,3 +594,74 @@ test("stickies: create, edit, isolation, soft delete", async () => {
   );
   assert.equal((await a(`/api/stickies/${sticky.id}/restore`, { method: "POST" })).status, 200);
 });
+
+test("offline sync: stale write conflicts, and the losing edit is kept as history", async () => {
+  const a = authed((await signUpJar("oa")).header());
+  const b = authed((await signUpJar("ob")).header());
+  const ws = await makeWorkspace(a, "Sync ws");
+
+  const { note } = await (
+    await a(`/api/workspaces/${ws.id}/notes`, {
+      method: "POST",
+      body: JSON.stringify({ title: "Shared note", text: "base" })
+    })
+  ).json();
+  const base = note.updated_at;
+
+  // "Device 2" (same account, different client) makes a write.
+  await new Promise((r) => setTimeout(r, 10));
+  const dev2 = await (
+    await a(`/api/notes/${note.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ text: "device two wins" })
+    })
+  ).json();
+  assert.equal(dev2.note.content_text, "device two wins");
+  assert.notEqual(dev2.note.updated_at, base);
+
+  // A second authenticated session sees that write (MASTER test 9).
+  const fromB2 = await a(`/api/notes/${note.id}`);
+  assert.equal((await fromB2.json()).note.content_text, "device two wins");
+
+  // "Device 1" flushes an offline edit made against the ORIGINAL updated_at.
+  const conflictRes = await a(`/api/notes/${note.id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ text: "device one offline edit", ifUnmodifiedSince: base })
+  });
+  assert.equal(conflictRes.status, 409);
+  const conflictBody = await conflictRes.json();
+  assert.equal(conflictBody.error, "conflict");
+  assert.equal(conflictBody.note.content_text, "device two wins", "409 returns the server note");
+
+  // Client preserves the losing edit as history, then adopts the server copy.
+  const snap = await a(`/api/notes/${note.id}/versions`, {
+    method: "POST",
+    body: JSON.stringify({ text: "device one offline edit", source: "import" })
+  });
+  assert.equal(snap.status, 201);
+
+  const versions = (await (await a(`/api/notes/${note.id}/versions`)).json()).versions;
+  assert.equal(
+    versions.some((v) => v.content_text === "device one offline edit" && v.source === "import"),
+    true,
+    "the offline edit survives as an 'import' version"
+  );
+  // The live note is still device two's content — nothing was clobbered.
+  assert.equal((await (await a(`/api/notes/${note.id}`)).json()).note.content_text, "device two wins");
+
+  // Without ifUnmodifiedSince a stale write still applies (backwards compatible).
+  const plain = await a(`/api/notes/${note.id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ text: "later edit" })
+  });
+  assert.equal(plain.status, 200);
+
+  // A version snapshot endpoint is private to the owner.
+  assert.equal(
+    (await b(`/api/notes/${note.id}/versions`, {
+      method: "POST",
+      body: JSON.stringify({ text: "intruder" })
+    })).status,
+    404
+  );
+});

@@ -4,11 +4,19 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Note, NoteVersion } from "@/lib/db/notes";
 import { Markdown } from "@/components/markdown";
+import {
+  dismissConflict,
+  flush,
+  getSyncState,
+  queueNoteUpdate,
+  readCachedNoteFor,
+  seedNoteCache,
+  subscribeSync,
+  type SyncState
+} from "@/lib/offline/client";
 
-type SaveState = "saved" | "dirty" | "saving" | "error";
 type Mode = "write" | "split" | "preview";
-
-const DEBOUNCE_MS = 1200;
+const DEBOUNCE_MS = 1000;
 
 async function apiJson<T>(path: string, init: RequestInit): Promise<T> {
   const res = await fetch(path, {
@@ -38,18 +46,47 @@ export function NoteEditor({
   const router = useRouter();
   const [title, setTitle] = useState(note.title);
   const [text, setText] = useState(note.content_text);
-  const [state, setState] = useState<SaveState>("saved");
   const [mode, setMode] = useState<Mode>("write");
   const [versions, setVersions] = useState<NoteVersion[]>(initialVersions);
   const [showVersions, setShowVersions] = useState(false);
   const [preview, setPreview] = useState<NoteVersion | null>(null);
+  const [sync, setSync] = useState<SyncState>(getSyncState());
+  const [dirty, setDirty] = useState(false);
 
   const bodyRef = useRef<HTMLTextAreaElement>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const inFlight = useRef(false);
-  const pending = useRef(false);
   const latest = useRef({ title: note.title, text: note.content_text });
-  const savedRef = useRef({ title: note.title, text: note.content_text });
+  const base = useRef(note.updated_at);
+
+  // Seed / adopt the local cache and track sync status.
+  useEffect(() => {
+    let cancelled = false;
+    void seedNoteCache(note).then(() => readCachedNoteFor(note.id)).then((c) => {
+      if (cancelled || !c) return;
+      base.current = c.serverUpdatedAt;
+      if (c.dirty) {
+        setTitle(c.title);
+        setText(c.text);
+        latest.current = { title: c.title, text: c.text };
+        setDirty(true);
+      }
+    });
+    const unsub = subscribeSync((s) => {
+      setSync(s);
+      if (!s.syncing && s.pending === 0) {
+        setDirty(false);
+        void readCachedNoteFor(note.id).then((c) => {
+          if (c) base.current = c.serverUpdatedAt;
+        });
+        void refreshVersions();
+      }
+    });
+    return () => {
+      cancelled = true;
+      unsub();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [note.id]);
 
   const refreshVersions = useCallback(async () => {
     try {
@@ -63,117 +100,71 @@ export function NoteEditor({
     }
   }, [note.id]);
 
-  const save = useCallback(
-    async (source: "autosave" | "manual") => {
-      if (inFlight.current) {
-        pending.current = true;
-        return;
+  const commit = useCallback(() => {
+    setDirty(false);
+    void queueNoteUpdate(note.id, { ...latest.current }, base.current);
+  }, [note.id]);
+
+  const onEdit = useCallback(
+    (next: { title?: string; text?: string }) => {
+      if (next.title !== undefined) {
+        setTitle(next.title);
+        latest.current.title = next.title;
       }
-      const snapshot = { ...latest.current };
-      if (
-        source === "autosave" &&
-        snapshot.title === savedRef.current.title &&
-        snapshot.text === savedRef.current.text
-      ) {
-        setState("saved");
-        return;
+      if (next.text !== undefined) {
+        setText(next.text);
+        latest.current.text = next.text;
       }
-      inFlight.current = true;
-      setState("saving");
-      try {
-        await apiJson<{ note: Note }>(`/api/notes/${note.id}`, {
-          method: "PATCH",
-          body: JSON.stringify({ ...snapshot, source })
-        });
-        savedRef.current = snapshot;
-        const stillCurrent =
-          latest.current.title === snapshot.title && latest.current.text === snapshot.text;
-        setState(stillCurrent ? "saved" : "dirty");
-        void refreshVersions();
-      } catch {
-        setState("error");
-      } finally {
-        inFlight.current = false;
-        if (pending.current) {
-          pending.current = false;
-          void save("autosave");
-        }
-      }
+      setDirty(true);
+      if (timer.current) clearTimeout(timer.current);
+      timer.current = setTimeout(commit, DEBOUNCE_MS);
     },
-    [note.id, refreshVersions]
+    [commit]
   );
 
-  const scheduleSave = useCallback(() => {
-    setState("dirty");
-    if (timer.current) clearTimeout(timer.current);
-    timer.current = setTimeout(() => void save("autosave"), DEBOUNCE_MS);
-  }, [save]);
+  useEffect(() => {
+    function onHide() {
+      if (dirty) {
+        if (timer.current) clearTimeout(timer.current);
+        commit();
+      }
+    }
+    function onVisibility() {
+      if (document.visibilityState === "hidden") onHide();
+    }
+    window.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("pagehide", onHide);
+    return () => {
+      window.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("pagehide", onHide);
+      if (timer.current) clearTimeout(timer.current);
+    };
+  }, [dirty, commit]);
 
-  function onTitle(v: string) {
-    setTitle(v);
-    latest.current.title = v;
-    scheduleSave();
-  }
-  function onText(v: string) {
-    setText(v);
-    latest.current.text = v;
-    scheduleSave();
-  }
-
-  /** Toolbar: wrap the current selection, or insert at the caret. */
+  // --- toolbar helpers ---
   function surround(before: string, after = before, placeholder = "text") {
     const el = bodyRef.current;
     if (!el) return;
     const { selectionStart: s, selectionEnd: e, value } = el;
     const sel = value.slice(s, e) || placeholder;
-    const next = value.slice(0, s) + before + sel + after + value.slice(e);
-    onText(next);
+    onEdit({ text: value.slice(0, s) + before + sel + after + value.slice(e) });
     requestAnimationFrame(() => {
       el.focus();
       el.selectionStart = s + before.length;
       el.selectionEnd = s + before.length + sel.length;
     });
   }
-
   function linePrefix(prefix: string) {
     const el = bodyRef.current;
     if (!el) return;
     const { selectionStart: s, value } = el;
     const lineStart = value.lastIndexOf("\n", s - 1) + 1;
-    const next = value.slice(0, lineStart) + prefix + value.slice(lineStart);
-    onText(next);
+    onEdit({ text: value.slice(0, lineStart) + prefix + value.slice(lineStart) });
     requestAnimationFrame(() => {
       el.focus();
       el.selectionStart = el.selectionEnd = s + prefix.length;
     });
   }
-
-  useEffect(() => {
-    function flush() {
-      if (
-        latest.current.title === savedRef.current.title &&
-        latest.current.text === savedRef.current.text
-      ) {
-        return;
-      }
-      fetch(`/api/notes/${note.id}`, {
-        method: "PATCH",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ ...latest.current, source: "autosave" }),
-        keepalive: true
-      }).catch(() => {});
-    }
-    function onVisibility() {
-      if (document.visibilityState === "hidden") flush();
-    }
-    window.addEventListener("visibilitychange", onVisibility);
-    window.addEventListener("pagehide", flush);
-    return () => {
-      window.removeEventListener("visibilitychange", onVisibility);
-      window.removeEventListener("pagehide", flush);
-      if (timer.current) clearTimeout(timer.current);
-    };
-  }, [note.id]);
 
   async function del() {
     try {
@@ -181,7 +172,7 @@ export function NoteEditor({
       router.push("/notes");
       router.refresh();
     } catch {
-      setState("error");
+      /* surfaced by sync bar / retry */
     }
   }
 
@@ -194,39 +185,59 @@ export function NoteEditor({
       setTitle(updated.title);
       setText(updated.content_text);
       latest.current = { title: updated.title, text: updated.content_text };
-      savedRef.current = { ...latest.current };
-      setState("saved");
+      base.current = updated.updated_at;
+      await seedNoteCache(updated);
+      setDirty(false);
       setPreview(null);
       void refreshVersions();
     } catch {
-      setState("error");
+      /* ignore */
     }
   }
 
-  const status: Record<SaveState, string> = {
-    saved: "Saved",
-    dirty: "Unsaved changes",
-    saving: "Saving…",
-    error: "Couldn’t save"
-  };
+  const hasConflict = sync.conflicts.includes(note.id);
+
+  function statusLabel(): { text: string; kind: string } {
+    if (sync.error) return { text: sync.error, kind: "error" };
+    if (!sync.online && (dirty || sync.pending > 0)) {
+      return { text: "Saved on this device — will sync when online", kind: "offline" };
+    }
+    if (sync.syncing) return { text: "Saving…", kind: "saving" };
+    if (dirty || sync.pending > 0) return { text: "Saving…", kind: "saving" };
+    return { text: "Saved", kind: "saved" };
+  }
+  const status = statusLabel();
 
   return (
     <div className="note-editor">
+      {hasConflict ? (
+        <div className="conflict-banner" role="alert">
+          This note was changed on another device. Your offline version was saved to{" "}
+          <button className="linkish" type="button" onClick={() => setShowVersions(true)}>
+            History
+          </button>
+          .
+          <button className="linkish" type="button" onClick={() => dismissConflict(note.id)}>
+            Dismiss
+          </button>
+        </div>
+      ) : null}
+
       <div className="topbar">
         <input
           className="note-title"
           aria-label="Note title"
           value={title}
-          onChange={(e) => onTitle(e.target.value)}
+          onChange={(e) => onEdit({ title: e.target.value })}
           placeholder="Untitled note"
         />
         <div className="note-actions">
-          <span className={`save-state save-${state}`} role="status" aria-live="polite">
-            {status[state]}
-            {state === "error" ? (
+          <span className={`save-state save-${status.kind}`} role="status" aria-live="polite">
+            {status.text}
+            {status.kind === "error" ? (
               <>
                 {" — "}
-                <button className="linkish" type="button" onClick={() => void save("manual")}>
+                <button className="linkish" type="button" onClick={() => void flush()}>
                   Retry
                 </button>
               </>
@@ -293,7 +304,7 @@ export function NoteEditor({
             className="note-body"
             aria-label="Note"
             value={text}
-            onChange={(e) => onText(e.target.value)}
+            onChange={(e) => onEdit({ text: e.target.value })}
             placeholder="Start writing… Markdown supported."
           />
         ) : null}
@@ -308,9 +319,6 @@ export function NoteEditor({
         <aside className="versions">
           <div className="section-head">
             <h2>History</h2>
-            <button className="linkish" type="button" onClick={() => void save("manual")}>
-              Snapshot now
-            </button>
           </div>
           <ul className="version-list">
             {versions.map((v) => (
@@ -326,11 +334,9 @@ export function NoteEditor({
                   >
                     {preview?.id === v.id ? "Hide" : "Preview"}
                   </button>
-                  {v.version !== versions[0]?.version ? (
-                    <button className="linkish" type="button" onClick={() => restore(v.version)}>
-                      Restore this version
-                    </button>
-                  ) : null}
+                  <button className="linkish" type="button" onClick={() => restore(v.version)}>
+                    Restore this version
+                  </button>
                 </div>
                 {preview?.id === v.id ? (
                   <pre className="version-preview">{v.content_text || "(empty)"}</pre>

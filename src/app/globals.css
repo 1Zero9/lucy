@@ -827,6 +827,44 @@ h2.overdue { color: var(--error); }
 .sticky p { margin: 0; font-size: 13px; white-space: pre-wrap; }
 .sticky-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 
+/* --- offline / sync UX (Phase 5) --- */
+
+.offline-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 10px 16px;
+  font-size: 13px;
+  background: var(--primary-strong);
+  color: #fff;
+  text-align: center;
+}
+.offline-bar.is-offline { background: #475569; }
+.offline-bar.is-error { background: var(--error); }
+.offline-bar .linkish { color: #fff; text-decoration: underline; }
+
+.conflict-banner {
+  border: 1px solid #FDE68A;
+  background: #FEF9C3;
+  color: #713F12;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.save-state.save-offline { color: #475569; }
+
 @media (max-width: 760px) {
   .home-cols { grid-template-columns: 1fr; gap: 20px; }
   .editor-panes.mode-split { grid-template-columns: 1fr; }
