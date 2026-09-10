@@ -65,10 +65,10 @@
 - [x] PDF/image handling (inline for images/pdf/text; Markdown image embeds)
 
 ## Phase 4 — Quick organisation
-- [ ] Stickies
-- [ ] Tasks
-- [ ] Reminders
-- [ ] Calendar-oriented due views
+- [x] Stickies
+- [x] Tasks
+- [x] Reminders (in-app remind_at; no push/email delivery yet)
+- [x] Calendar-oriented due views (Overdue / Today / Next 7 days / Later / No date)
 
 ## Phase 5 — Offline reliability
 - [ ] IndexedDB

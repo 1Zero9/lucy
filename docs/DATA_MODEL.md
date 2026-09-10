@@ -31,9 +31,14 @@ ISO-8601 TEXT, matching the rest of the schema.
   bucket; `r2_key` is server-generated and re-derived from an owner-scoped row
   on every download, never trusted from the client.
 
-## Later
+## Added in Phase 4 (`0005_quick_org.sql`)
 
-- `stickies`
+- `stickies` — fast throwaway capture inside a workspace
+- `tasks` — action + optional `due_at` / `remind_at` / `completed_at`, `status`
+  open|done, optional link to a module or note. Reminders are in-app only (no
+  push/email delivery); due views group by `src/lib/due.ts`.
+
+## Later
 - `tasks`
 - `attachments`
 - `research_items`

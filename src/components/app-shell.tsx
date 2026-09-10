@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
-type Section = "home" | "notes" | "modules" | "files" | "workspaces" | "settings";
+type Section = "home" | "notes" | "modules" | "files" | "tasks" | "workspaces" | "settings";
 
 export function AppShell({
   children,
@@ -28,9 +28,9 @@ export function AppShell({
           <Link href="/files" aria-current={cur("files")}>
             Files
           </Link>
-          <a href="#" aria-disabled="true">
+          <Link href="/tasks" aria-current={cur("tasks")}>
             Tasks
-          </a>
+          </Link>
           <Link href="/workspaces" aria-current={cur("workspaces")}>
             Workspaces
           </Link>

@@ -490,3 +490,107 @@ test("files: a note-scoped upload is listed under that note only", async () => {
   });
   assert.equal(bad.status, 400);
 });
+
+test("tasks: create, status, due filter, isolation, soft delete", async () => {
+  const a = authed((await signUpJar("ta")).header());
+  const b = authed((await signUpJar("tb")).header());
+  const ws = await makeWorkspace(a, "Tasks ws");
+
+  assert.equal((await fetch(`${BASE}/api/workspaces/${ws.id}/tasks`)).status, 401);
+
+  const created = await a(`/api/workspaces/${ws.id}/tasks`, {
+    method: "POST",
+    body: JSON.stringify({ title: "Read chapter 3", dueAt: "2026-10-01" })
+  });
+  assert.equal(created.status, 201);
+  const { task } = await created.json();
+  assert.equal(task.status, "open");
+  assert.ok(task.due_at, "due_at should be stored");
+
+  // Status transitions.
+  const doneRes = await a(`/api/tasks/${task.id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ status: "done" })
+  });
+  assert.equal(doneRes.status, 200);
+  assert.equal((await doneRes.json()).task.completed_at !== null, true);
+
+  const openList = (await (await a(`/api/workspaces/${ws.id}/tasks?status=open`)).json()).tasks;
+  const doneList = (await (await a(`/api/workspaces/${ws.id}/tasks?status=done`)).json()).tasks;
+  assert.equal(openList.some((t) => t.id === task.id), false);
+  assert.equal(doneList.some((t) => t.id === task.id), true);
+
+  // Clear the due date.
+  const cleared = await (
+    await a(`/api/tasks/${task.id}`, { method: "PATCH", body: JSON.stringify({ dueAt: null }) })
+  ).json();
+  assert.equal(cleared.task.due_at, null);
+
+  // A note id from another workspace is rejected.
+  const other = await makeWorkspace(a, "Other ws");
+  const otherNote = (await (
+    await a(`/api/workspaces/${other.id}/notes`, {
+      method: "POST",
+      body: JSON.stringify({ title: "n" })
+    })
+  ).json()).note;
+  assert.equal(
+    (await a(`/api/workspaces/${ws.id}/tasks`, {
+      method: "POST",
+      body: JSON.stringify({ title: "x", noteId: otherNote.id })
+    })).status,
+    400
+  );
+
+  // Isolation.
+  assert.equal((await b(`/api/tasks/${task.id}`)).status, 404);
+  assert.equal(
+    (await b(`/api/tasks/${task.id}`, { method: "PATCH", body: JSON.stringify({ title: "hi" }) }))
+      .status,
+    404
+  );
+  assert.equal((await b(`/api/tasks/${task.id}`, { method: "DELETE" })).status, 404);
+  assert.equal((await b(`/api/workspaces/${ws.id}/tasks`)).status, 404);
+
+  // Soft delete + restore.
+  assert.equal((await a(`/api/tasks/${task.id}`, { method: "DELETE" })).status, 200);
+  assert.equal(
+    (await (await a(`/api/workspaces/${ws.id}/tasks?deleted=1`)).json()).tasks.some(
+      (t) => t.id === task.id
+    ),
+    true
+  );
+  assert.equal((await a(`/api/tasks/${task.id}/restore`, { method: "POST" })).status, 200);
+});
+
+test("stickies: create, edit, isolation, soft delete", async () => {
+  const a = authed((await signUpJar("sa")).header());
+  const b = authed((await signUpJar("sb")).header());
+  const ws = await makeWorkspace(a, "Stickies ws");
+
+  const created = await a(`/api/workspaces/${ws.id}/stickies`, {
+    method: "POST",
+    body: JSON.stringify({ body: "call the tutor" })
+  });
+  assert.equal(created.status, 201);
+  const { sticky } = await created.json();
+
+  const edited = await (
+    await a(`/api/stickies/${sticky.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ body: "call the tutor tomorrow", colour: "#dcfce7" })
+    })
+  ).json();
+  assert.equal(edited.sticky.body, "call the tutor tomorrow");
+  assert.equal(edited.sticky.colour, "#DCFCE7");
+
+  assert.equal((await b(`/api/stickies/${sticky.id}`, { method: "PATCH", body: JSON.stringify({ body: "x" }) })).status, 404);
+  assert.equal((await b(`/api/workspaces/${ws.id}/stickies`)).status, 404);
+
+  assert.equal((await a(`/api/stickies/${sticky.id}`, { method: "DELETE" })).status, 200);
+  assert.equal(
+    (await (await a(`/api/workspaces/${ws.id}/stickies`)).json()).stickies.length,
+    0
+  );
+  assert.equal((await a(`/api/stickies/${sticky.id}/restore`, { method: "POST" })).status, 200);
+});

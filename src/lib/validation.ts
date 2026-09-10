@@ -47,6 +47,15 @@ export function noteText(value: unknown): string {
   return value;
 }
 
+/** A clearable timestamp: "" / null -> null; otherwise a parseable date -> ISO. */
+export function optionalDate(value: unknown, field = "date"): string | null {
+  if (value === undefined || value === null || value === "") return null;
+  if (typeof value !== "string") throw new ValidationError(`${field} must be a date string.`);
+  const t = Date.parse(value);
+  if (Number.isNaN(t)) throw new ValidationError(`${field} is not a valid date.`);
+  return new Date(t).toISOString();
+}
+
 const HEX_COLOUR = /^#[0-9a-fA-F]{6}$/;
 
 export function optionalColour(value: unknown, field = "colour"): string | null {
