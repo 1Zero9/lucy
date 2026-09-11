@@ -93,3 +93,93 @@ Scope: notes only. Tasks / stickies / files remain online-only for now.
 
 ## Phase 7 — Intelligence
 Only after explicit owner approval.
+
+## Phase 8 — Notes, Study & Trust Upgrade
+Build spec derived from UPGRADE.md's assessment (11 Sep 2026, reviewed v0.15.0).
+Implemented in the doc's own "Recommended implementation order" — data-safety
+first, then one complete subject→note→flashcard journey, then editor/control
+polish, then offline/export/backup. GDPR/privacy-policy items (§9) are
+product/legal decisions, not engineering tasks — tracked separately below,
+not silently authored.
+
+### 8A — Save/recovery and local-privacy fixes (UPGRADE.md §7)
+- [ ] `flush()` keeps queued edits on transient/server-error failures instead
+      of dropping them — only conflict (409, handled) and a small set of
+      genuinely terminal errors clear the queue
+- [ ] `preserveAsHistory()` checks the response and only proceeds with the
+      conflict swap once history is confirmed saved; keep the local losing
+      edit recoverable if preservation itself fails
+- [ ] IndexedDB cache/queue keys are account-scoped (not just note id), so a
+      second account on the same device/browser can't see the first
+      account's cached notes or queued edits
+- [ ] Sign-out clears or isolates the local cache/queue for that account
+      without silently discarding unsynced work — warn before discarding,
+      or scope it forward to the next sign-in of the same account
+- [ ] Tests: failed-save retains queue entry; conflict preservation is
+      confirmed before swap; second account on one device cannot read the
+      first account's offline data
+
+### 8B — One complete subject → note → flashcard → source-note journey
+(UPGRADE.md §1–2, the "smallest complete task" from the recommended order,
+not the full IA rework)
+- [ ] Module page opens into its notes (and, alongside, its files and
+      flashcards) instead of only exposing Rename/Delete
+- [ ] Creating a note/file/flashcard from within a module assigns it to that
+      module automatically
+- [ ] Note editor shows a visible subject/module label; clicking it opens a
+      searchable "Move to subject" picker (update endpoint gains module
+      reassignment)
+- [ ] Flashcard create form accepts an optional source note id (API already
+      supports it); revision/flashcard views show "Open source note"
+- [ ] Note editor's "Link to note" searches titles and inserts a stable
+      reference that survives the target note being renamed
+- [ ] A compact "related" section under a note surfaces its flashcards
+
+### 8C — Editor and controls (UPGRADE.md §3–5)
+- [ ] Formatted (WYSIWYG-ish) editing by default — bold looks bold, headings
+      look like headings; Markdown source view stays available, optional.
+      Preserve existing content, version history, export, and offline path.
+- [ ] Reorder the phone editor: breadcrumb + subject, title + save status,
+      compact formatting controls, writing surface, attachments/related
+      below — writing starts near the top of the viewport, not ~560px down
+- [ ] Subject assignment stays visible; colour/tags/history/export/delete
+      move into a Details/overflow control
+- [ ] Consistent button language: filled purple = primary action, neutral =
+      secondary, overflow menu for rename/delete; explicit labels ("New
+      subject", "Add flashcard", "Review 3 cards") instead of bare "Add"
+- [ ] Clickable cards open their content; rename/delete move off the card
+      face and into its menu
+- [ ] Visual density pass: compact note rows (title, subject, excerpt,
+      readable date), fewer shadows/borders, consistent input/button
+      heights, clean previews (strip raw `##`/`**` from Home excerpts),
+      relative dates ("Yesterday", "11 Sep")
+- [ ] Mobile bottom bar reconsidered around the notes/study brief (proposed:
+      Notes, Subjects, Create, Review, Search) — update docs alongside code
+      if this navigation change is agreed and shipped
+- [ ] Desktop: quiet subject/nav rail beside a note list next to the editor,
+      so switching notes doesn't require a full page return
+
+### 8D — Offline scope, export, and backup (UPGRADE.md §8)
+- [ ] State offline capability precisely in-product: cached note editing is
+      supported today; new-note creation and file downloads currently
+      require a connection — don't imply broader offline support than exists
+- [ ] Design (separately) "keep available offline" for selected
+      subjects/files, with confirmed availability and storage usage shown
+- [ ] Offline note creation as its own scoped, tested capability
+- [ ] Status copy: Saved, Saving…, Saved on this device, Syncing…, and
+      action-required errors — consistent everywhere
+- [ ] Scheduled backups (D1 + R2 contents), tested restoration into a
+      separate environment, documented retention/RTO/data-loss window
+- [ ] User-facing export: readable notes, original attachments, structured
+      metadata preserving relationships; verify the export is independently
+      usable
+
+### Not an engineering task — needs an owner decision (UPGRADE.md §9)
+Tracked here so it isn't lost, not authored unilaterally:
+- [ ] Privacy notice, retention rules, account-deletion process, and a
+      rights-request contact for the deployed app
+- [ ] Confirm controller/processor responsibilities and lawful basis for the
+      actual deployment (owner + any school relationships)
+- [ ] If/when school-managed or under-18 users are in scope: age-appropriate
+      explanations and protective defaults, considered deliberately, not
+      assumed
