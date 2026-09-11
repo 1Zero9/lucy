@@ -7,6 +7,7 @@ import { listResearch } from "@/lib/db/research";
 import { listFlashcards, listDueFlashcards } from "@/lib/db/flashcards";
 import { listDrawings } from "@/lib/db/drawings";
 import { AppShell } from "@/components/app-shell";
+import { DrawingIcon, FlashcardsIcon, ResearchIcon, RevisionsIcon } from "@/components/icons";
 
 export const metadata = { title: "Study · LUCY" };
 
@@ -27,14 +28,30 @@ export default async function StudyPage() {
     {
       href: "/revise",
       title: "Revision",
+      icon: RevisionsIcon,
       body:
         due.length > 0
           ? `${due.length} card${due.length === 1 ? "" : "s"} due now`
           : "Nothing due — you're caught up"
     },
-    { href: "/flashcards", title: "Flashcards", body: `${cards.length} in this workspace` },
-    { href: "/research", title: "Research", body: `${research.length} saved source${research.length === 1 ? "" : "s"}` },
-    { href: "/drawings", title: "Drawings", body: `${drawings.length} sketch${drawings.length === 1 ? "" : "es"}` }
+    {
+      href: "/flashcards",
+      title: "Flashcards",
+      icon: FlashcardsIcon,
+      body: `${cards.length} in this workspace`
+    },
+    {
+      href: "/research",
+      title: "Research",
+      icon: ResearchIcon,
+      body: `${research.length} saved source${research.length === 1 ? "" : "s"}`
+    },
+    {
+      href: "/drawings",
+      title: "Drawings",
+      icon: DrawingIcon,
+      body: `${drawings.length} sketch${drawings.length === 1 ? "" : "es"}`
+    }
   ];
 
   return (
@@ -49,7 +66,10 @@ export default async function StudyPage() {
       </div>
       <div className="module-grid">
         {tools.map((t) => (
-          <Link key={t.href} href={t.href} className="module-card" style={{ textDecoration: "none" }}>
+          <Link key={t.href} href={t.href} className="module-card tool-card" style={{ textDecoration: "none" }}>
+            <span className="tool-card-icon">
+              <t.icon size={22} />
+            </span>
             <h3>{t.title}</h3>
             <p className="muted">{t.body}</p>
           </Link>

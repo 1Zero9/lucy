@@ -5,6 +5,8 @@ import { getDb } from "@/lib/db";
 import { resolveActiveWorkspace } from "@/lib/workspace-context";
 import { search, type SearchHit } from "@/lib/db/search";
 import { AppShell } from "@/components/app-shell";
+import { SearchIcon } from "@/components/icons";
+import { EmptyState } from "@/components/empty-state";
 
 export const metadata = { title: "Search · LUCY" };
 
@@ -67,9 +69,17 @@ export default async function SearchPage({
       </form>
 
       {!q ? (
-        <p className="muted">Type something to search this workspace.</p>
+        <EmptyState
+          icon={<SearchIcon size={22} />}
+          title="Search this workspace"
+          body="Notes, tasks, stickies, modules, research and flashcards — type above to find anything."
+        />
       ) : total === 0 ? (
-        <div className="empty">No matches for “{q}”.</div>
+        <EmptyState
+          icon={<SearchIcon size={22} />}
+          title={`No matches for "${q}"`}
+          body="Try a different word, or check another workspace from the switcher on Home."
+        />
       ) : (
         (Object.keys(GROUP_LABEL) as SearchHit["type"][]).map((type) => {
           const list = results?.[type] ?? [];

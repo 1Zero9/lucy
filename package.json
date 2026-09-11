@@ -1,6 +1,6 @@
 {
   "name": "lucy",
-  "version": "0.12.1",
+  "version": "0.13.0",
   "private": true,
   "scripts": {
     "dev": "vinext dev --port 3001",
@@ -12,6 +12,7 @@
     "cf:init": "npx vinext init",
     "cf:typegen": "npx wrangler types",
     "test:e2e": "node --test scripts/auth-e2e.mjs",
+    "seed:demo": "node scripts/seed-demo.mjs",
     "db:migrate:local": "npx wrangler d1 migrations apply DB --local",
     "db:migrate:dev": "npx wrangler d1 migrations apply DB --remote --env dev",
     "db:migrate:prod": "./scripts/migrate-production.sh",

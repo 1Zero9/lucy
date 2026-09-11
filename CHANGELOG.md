@@ -7,6 +7,28 @@ for a pre-1.0 foundation build.
 
 ## [Unreleased]
 
+## [0.13.0] — 2026-09-11
+### Added
+- **Visual design pass**: a shared `EmptyState` component (icon + one-line
+  explanation + one action, per `docs/LUCY_STYLE_GUIDE.md` §21) replacing
+  ad-hoc empty copy across notes, modules, workspaces, trash, stickies,
+  tasks, attachments, flashcards, research, drawings, and search. New
+  `FlashcardsIcon`, `ResearchIcon`, `CalendarIcon`. Sign-in/sign-up screens
+  now carry the LUCY mark and a subtle tinted background; Home gained a
+  "Workspace" eyebrow label and icons on each summary section; Study hub
+  tool cards gained icons. Buttons and links got a light hover/press
+  transition instead of a hard snap.
+- **Demo account + seed script** (`scripts/seed-demo.mjs`,
+  `npm run seed:demo`): populates a demo account (`demo@1zero9.com`) with
+  a realistic "CISSP Certification" workspace (3 modules, 2 folders, 5
+  notes, 5 tasks, 3 stickies, 2 research items, 5 flashcards with review
+  history, a file attachment, and a drawing) plus a second, sparser "French
+  B2" workspace to show the workspace switcher. Idempotent — safe to
+  re-run. Refuses to run against anything that looks like the production
+  domain unless `ALLOW_PROD_SEED=yes` is set explicitly. Seeded live on
+  `lucy-dev.1zero9.com`; production D1 remains untouched (verified: 0
+  rows).
+
 ## [0.12.1] — 2026-09-11
 ### Added
 - Dev-environment indicator so dev and production are never visually

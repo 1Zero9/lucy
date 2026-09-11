@@ -3,6 +3,8 @@
 import { useState } from "react";
 import type { Module } from "@/lib/db/modules";
 import { friendlyError } from "@/lib/errors";
+import { ModulesIcon } from "@/components/icons";
+import { EmptyState } from "@/components/empty-state";
 
 type Props = {
   workspaceId: string;
@@ -123,7 +125,11 @@ export function ModulesManager({ workspaceId, initialModules }: Props) {
       </form>
 
       {modules.length === 0 ? (
-        <div className="empty">No modules yet. Add your first one above.</div>
+        <EmptyState
+          icon={<ModulesIcon size={22} />}
+          title="No modules yet"
+          body="Add your first one above — a subject, topic or unit inside this workspace."
+        />
       ) : (
         <div className="module-grid">
           {modules.map((mod) => (

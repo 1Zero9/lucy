@@ -4,6 +4,8 @@ import { useState } from "react";
 import { switchWorkspaceAction } from "@/app/actions";
 import type { Workspace } from "@/lib/db/workspaces";
 import { friendlyError } from "@/lib/errors";
+import { ArchiveIcon } from "@/components/icons";
+import { EmptyState } from "@/components/empty-state";
 
 async function api<T = unknown>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(path, {
@@ -89,7 +91,11 @@ export function WorkspacesManager({
       ))}
 
       {workspaces.length === 0 ? (
-        <div className="empty">No workspaces. Create one below.</div>
+        <EmptyState
+          icon={<ArchiveIcon size={22} />}
+          title="No workspaces yet"
+          body="A workspace is a top-level learning context — a degree, a certification, a course, a personal project. Create one below."
+        />
       ) : (
         <div className="module-grid">
           {workspaces.map((ws) => (

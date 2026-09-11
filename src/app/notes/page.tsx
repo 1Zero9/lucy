@@ -9,6 +9,8 @@ import { listTags, tagsForNotes } from "@/lib/db/tags";
 import { AppShell } from "@/components/app-shell";
 import { NewNoteButton } from "@/components/new-note-button";
 import { NotesFilter } from "@/components/notes-filter";
+import { NotesIcon } from "@/components/icons";
+import { EmptyState } from "@/components/empty-state";
 
 export const metadata = { title: "Notes · LUCY" };
 
@@ -43,6 +45,7 @@ export default async function NotesPage({
     user.id,
     notes.map((n) => n.id)
   );
+  const filtered = Boolean(sp.folder || sp.tag);
 
   return (
     <AppShell active="notes" workspaceId={active.id}>
@@ -73,7 +76,16 @@ export default async function NotesPage({
       />
 
       {notes.length === 0 ? (
-        <div className="empty">Nothing here. Create a note or clear the filters.</div>
+        <EmptyState
+          icon={<NotesIcon size={22} />}
+          title={filtered ? "No notes match this filter" : "No notes yet"}
+          body={
+            filtered
+              ? "Try a different folder or tag, or clear the filter above."
+              : "Your notes for this workspace will show up here."
+          }
+          action={filtered ? undefined : <NewNoteButton workspaceId={active.id} label="Create your first note" />}
+        />
       ) : (
         <ul className="note-list">
           {notes.map((n) => (

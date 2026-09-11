@@ -4,6 +4,8 @@ import { useState } from "react";
 import type { Flashcard } from "@/lib/db/flashcards";
 import type { Module } from "@/lib/db/modules";
 import { friendlyError } from "@/lib/errors";
+import { FlashcardsIcon } from "@/components/icons";
+import { EmptyState } from "@/components/empty-state";
 
 async function jsonOrThrow(res: Response) {
   const body: unknown = await res.json().catch(() => ({}));
@@ -133,7 +135,11 @@ export function FlashcardsManager({
       ))}
 
       {cards.length === 0 ? (
-        <div className="empty">No flashcards yet.</div>
+        <EmptyState
+          icon={<FlashcardsIcon size={22} />}
+          title="No flashcards yet"
+          body="Add a front and back above — they'll show up in Revision when they're due."
+        />
       ) : (
         [...groups.entries()].map(([mid, list]) => (
           <section key={mid || "none"} className="task-group">

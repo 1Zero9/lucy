@@ -3,6 +3,8 @@
 import { useState } from "react";
 import type { Sticky } from "@/lib/db/stickies";
 import { friendlyError } from "@/lib/errors";
+import { StickyIcon } from "@/components/icons";
+import { EmptyState } from "@/components/empty-state";
 
 const PALETTE = ["#FEF9C3", "#DCFCE7", "#DBEAFE", "#FEE2E2", "#F3E8FF", "#FFEDD5"];
 
@@ -112,7 +114,11 @@ export function StickiesBoard({
       ))}
 
       {stickies.length === 0 ? (
-        <div className="empty">No stickies. Add one above.</div>
+        <EmptyState
+          icon={<StickyIcon size={22} />}
+          title="No stickies yet"
+          body="Fast, throwaway capture — jot something down above without opening a note."
+        />
       ) : (
         <div className="sticky-grid">
           {stickies.map((st) => (

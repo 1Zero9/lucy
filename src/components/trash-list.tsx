@@ -3,6 +3,8 @@
 import { useState } from "react";
 import type { Note } from "@/lib/db/notes";
 import { friendlyError } from "@/lib/errors";
+import { ArchiveIcon } from "@/components/icons";
+import { EmptyState } from "@/components/empty-state";
 
 async function post(path: string) {
   const res = await fetch(path, { method: "POST", headers: { "content-type": "application/json" } });
@@ -36,7 +38,13 @@ export function TrashList({ initialNotes }: { initialNotes: Note[] }) {
   }
 
   if (notes.length === 0) {
-    return <div className="empty">Recently Deleted is empty.</div>;
+    return (
+      <EmptyState
+        icon={<ArchiveIcon size={22} />}
+        title="Recently Deleted is empty"
+        body="Deleted notes stay here until you restore them or delete them permanently."
+      />
+    );
   }
 
   return (

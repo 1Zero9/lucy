@@ -4,6 +4,8 @@ import { useState } from "react";
 import type { ResearchItem } from "@/lib/db/research";
 import { Markdown } from "@/components/markdown";
 import { friendlyError } from "@/lib/errors";
+import { ResearchIcon } from "@/components/icons";
+import { EmptyState } from "@/components/empty-state";
 
 async function jsonOrThrow(res: Response) {
   const body: unknown = await res.json().catch(() => ({}));
@@ -123,7 +125,11 @@ export function ResearchManager({
       ))}
 
       {items.length === 0 ? (
-        <div className="empty">No saved sources yet.</div>
+        <EmptyState
+          icon={<ResearchIcon size={22} />}
+          title="No saved sources yet"
+          body="Save a link, book, paper or video above, then add your own notes on it."
+        />
       ) : (
         <ul className="note-list">
           {items.map((it) => (

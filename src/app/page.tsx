@@ -14,6 +14,7 @@ import { SignOutButton } from "@/components/sign-out-button";
 import { WorkspaceSwitcher } from "@/components/workspace-switcher";
 import { ModuleGrid } from "@/components/module-grid";
 import { NewNoteButton } from "@/components/new-note-button";
+import { CalendarIcon, FilesIcon, ModulesIcon, NotesIcon, StickyIcon, TasksIcon } from "@/components/icons";
 
 export default async function Page() {
   const user = await requireUser();
@@ -46,6 +47,7 @@ export default async function Page() {
       </div>
 
       <section className="hero">
+        <span className="eyebrow">Workspace</span>
         <h1>{active.name}</h1>
         <p>{active.purpose ?? "Capture. Organise. Learn. Succeed."}</p>
       </section>
@@ -59,89 +61,101 @@ export default async function Page() {
         />
       </form>
 
-      <div className="home-cols">
-        <div>
-          <div className="section-head">
-            <h2>Today</h2>
-            <Link className="linkish" href="/tasks">
-              All tasks
-            </Link>
-          </div>
-          {today.length === 0 ? (
-            <div className="empty">Nothing due.</div>
-          ) : (
-            <ul className="mini-list">
-              {today.map((t) => (
-                <li key={t.id} className={dueBucket(t.due_at) === "overdue" ? "overdue" : undefined}>
-                  {t.title}
-                </li>
-              ))}
-            </ul>
-          )}
-
-          <div className="section-head" style={{ marginTop: 22 }}>
-            <h2>Coming up</h2>
-          </div>
-          {comingUp.length === 0 ? (
-            <div className="empty">Clear for the next week.</div>
-          ) : (
-            <ul className="mini-list">
-              {comingUp.map((t) => (
-                <li key={t.id}>
-                  {t.title}
-                  <span className="muted">
-                    {" "}
-                    · {new Date(t.due_at as string).toLocaleDateString()}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-
-        <div>
-          <div className="section-head">
-            <h2>Stickies</h2>
-            <Link className="linkish" href="/stickies">
-              Open board
-            </Link>
-          </div>
-          {recentStickies.length === 0 ? (
-            <div className="empty">No stickies.</div>
-          ) : (
-            <div className="sticky-grid mini">
-              {recentStickies.map((s) => (
-                <article className="sticky" key={s.id} style={{ background: s.colour ?? "#FEF9C3" }}>
-                  <p>{s.body}</p>
-                </article>
-              ))}
+      <div className="home-summary">
+        <div className="home-cols">
+          <div>
+            <div className="section-head">
+              <h2>
+                <TasksIcon size={16} /> Today
+              </h2>
+              <Link className="linkish" href="/tasks">
+                All tasks
+              </Link>
             </div>
-          )}
+            {today.length === 0 ? (
+              <div className="empty">Nothing due.</div>
+            ) : (
+              <ul className="mini-list">
+                {today.map((t) => (
+                  <li key={t.id} className={dueBucket(t.due_at) === "overdue" ? "overdue" : undefined}>
+                    {t.title}
+                  </li>
+                ))}
+              </ul>
+            )}
 
-          <div className="section-head" style={{ marginTop: 22 }}>
-            <h2>Recent files</h2>
-            <Link className="linkish" href="/files">
-              All files
-            </Link>
+            <div className="section-head" style={{ marginTop: 22 }}>
+              <h2>
+                <CalendarIcon size={16} /> Coming up
+              </h2>
+            </div>
+            {comingUp.length === 0 ? (
+              <div className="empty">Clear for the next week.</div>
+            ) : (
+              <ul className="mini-list">
+                {comingUp.map((t) => (
+                  <li key={t.id}>
+                    {t.title}
+                    <span className="muted">
+                      {" "}
+                      · {new Date(t.due_at as string).toLocaleDateString()}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
-          {recentFiles.length === 0 ? (
-            <div className="empty">No files.</div>
-          ) : (
-            <ul className="mini-list">
-              {recentFiles.map((f) => (
-                <li key={f.id}>
-                  <a href={`/api/attachments/${f.id}/download`} target="_blank" rel="noreferrer">
-                    {f.filename}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          )}
+
+          <div>
+            <div className="section-head">
+              <h2>
+                <StickyIcon size={16} /> Stickies
+              </h2>
+              <Link className="linkish" href="/stickies">
+                Open board
+              </Link>
+            </div>
+            {recentStickies.length === 0 ? (
+              <div className="empty">No stickies.</div>
+            ) : (
+              <div className="sticky-grid mini">
+                {recentStickies.map((s) => (
+                  <article className="sticky" key={s.id} style={{ background: s.colour ?? "#FEF9C3" }}>
+                    <p>{s.body}</p>
+                  </article>
+                ))}
+              </div>
+            )}
+
+            <div className="section-head" style={{ marginTop: 22 }}>
+              <h2>
+                <FilesIcon size={16} /> Recent files
+              </h2>
+              <Link className="linkish" href="/files">
+                All files
+              </Link>
+            </div>
+            {recentFiles.length === 0 ? (
+              <div className="empty">No files.</div>
+            ) : (
+              <ul className="mini-list">
+                {recentFiles.map((f) => (
+                  <li key={f.id}>
+                    <a href={`/api/attachments/${f.id}/download`} target="_blank" rel="noreferrer">
+                      {f.filename}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
       </div>
 
       <div className="section-head" style={{ marginTop: 28 }}>
-        <h2>Continue</h2>
+        <h2>
+          <NotesIcon size={16} /> Continue
+        </h2>
         <span className="row" style={{ alignItems: "center" }}>
           <Link className="linkish" href="/notes">
             All notes
@@ -167,7 +181,9 @@ export default async function Page() {
       )}
 
       <div className="section-head" style={{ marginTop: 28 }}>
-        <h2>Modules</h2>
+        <h2>
+          <ModulesIcon size={16} /> Modules
+        </h2>
         <Link className="linkish" href="/modules">
           Manage modules
         </Link>

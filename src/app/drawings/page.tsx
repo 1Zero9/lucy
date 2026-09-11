@@ -6,6 +6,8 @@ import { resolveActiveWorkspace } from "@/lib/workspace-context";
 import { listDrawings } from "@/lib/db/drawings";
 import { AppShell } from "@/components/app-shell";
 import { NewDrawingButton } from "@/components/new-drawing-button";
+import { DrawingIcon } from "@/components/icons";
+import { EmptyState } from "@/components/empty-state";
 
 export const metadata = { title: "Drawings · LUCY" };
 
@@ -29,7 +31,11 @@ export default async function DrawingsPage() {
       </div>
 
       {drawings.length === 0 ? (
-        <div className="empty">No drawings yet.</div>
+        <EmptyState
+          icon={<DrawingIcon size={22} />}
+          title="No drawings yet"
+          body="A simple freehand canvas for sketches and diagrams — start one above."
+        />
       ) : (
         <div className="module-grid">
           {drawings.map((d) => (

@@ -154,6 +154,16 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   width: 100%;
 }
 
+.eyebrow {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--primary);
+  margin-bottom: 4px;
+}
+
 .hero h1 { margin-bottom: var(--space-2); }
 .hero p { color: var(--muted); margin-top: 0; }
 
@@ -212,6 +222,10 @@ html[data-env="dev"] .auth {
   display: grid;
   place-items: center;
   padding: 24px;
+  background:
+    radial-gradient(600px 400px at 15% -10%, color-mix(in srgb, var(--primary) 10%, transparent), transparent),
+    radial-gradient(500px 380px at 100% 110%, color-mix(in srgb, var(--secondary) 10%, transparent), transparent),
+    var(--background);
 }
 
 .auth-card {
@@ -220,6 +234,13 @@ html[data-env="dev"] .auth {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 28px;
+  box-shadow: var(--shadow-card);
+}
+
+.auth-mark {
+  display: block;
+  border-radius: var(--radius-sm);
+  margin-bottom: 14px;
 }
 
 .auth-card h1 {
@@ -265,7 +286,11 @@ html[data-env="dev"] .auth {
   color: #fff;
   font-weight: 600;
   cursor: pointer;
+  transition: background-color 140ms ease, transform 100ms ease;
 }
+
+.btn:hover:not(:disabled) { background: var(--primary-strong); }
+.btn:active:not(:disabled) { transform: scale(0.98); }
 
 .btn:disabled {
   opacity: 0.6;
@@ -279,7 +304,10 @@ html[data-env="dev"] .auth {
   border-radius: var(--radius-md);
   background: var(--surface);
   cursor: pointer;
+  transition: background-color 140ms ease, border-color 140ms ease;
 }
+
+.btn-plain:hover:not(:disabled) { background: var(--background); border-color: var(--primary); }
 
 .auth-alt {
   margin-top: 16px;
@@ -337,6 +365,9 @@ html[data-env="dev"] .auth {
   line-height: 24px;
   font-weight: 600;
   margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .muted { color: var(--muted); }
@@ -362,6 +393,16 @@ html[data-env="dev"] .auth {
 }
 
 .module-card:hover { box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 12px 28px rgba(15, 23, 42, 0.09); }
+
+.tool-card-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  background: var(--background);
+  display: grid;
+  place-items: center;
+  margin-bottom: 2px;
+}
 
 .module-card h3 {
   margin: 0;
@@ -390,8 +431,10 @@ html[data-env="dev"] .auth {
   color: var(--primary-strong);
   cursor: pointer;
   font-size: 13px;
+  transition: opacity 120ms ease;
 }
 
+.linkish:hover { opacity: 0.75; }
 .linkish.danger { color: var(--error); }
 
 .inline-form {
@@ -445,9 +488,45 @@ html[data-env="dev"] .auth {
 .empty {
   border: 1px dashed var(--border);
   border-radius: var(--radius-lg);
-  padding: 28px;
+  padding: 20px;
   text-align: center;
   color: var(--muted);
+  font-size: 14px;
+}
+
+/* Full-page/section empty state — icon + heading + body + one action. */
+.empty-state {
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-lg);
+  padding: 48px 24px;
+  text-align: center;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+}
+
+.empty-state-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-pill);
+  background: var(--background);
+  display: grid;
+  place-items: center;
+  margin-bottom: 10px;
+}
+
+.empty-state h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.empty-state p {
+  margin: 0;
+  max-width: 320px;
+}
+
+.empty-state-action {
+  margin-top: 14px;
 }
 
 /* --- notes (Phase 1C) --- */
@@ -818,6 +897,14 @@ html[data-env="dev"] .auth {
 label.btn { display: inline-flex; align-items: center; cursor: pointer; }
 
 /* --- quick organisation: tasks & stickies (Phase 4) --- */
+
+.home-summary {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin: 24px 0;
+}
 
 .home-cols {
   display: grid;

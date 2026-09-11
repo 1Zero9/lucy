@@ -3,6 +3,8 @@
 import { useRef, useState } from "react";
 import type { Attachment } from "@/lib/db/attachments";
 import { friendlyError } from "@/lib/errors";
+import { FilesIcon } from "@/components/icons";
+import { EmptyState } from "@/components/empty-state";
 
 function humanSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -119,7 +121,11 @@ export function AttachmentsManager({
       ))}
 
       {items.length === 0 ? (
-        <div className="empty">No files yet.</div>
+        <EmptyState
+          icon={<FilesIcon size={22} />}
+          title="No files yet"
+          body="Upload a PDF, image or document — it stays private to your account."
+        />
       ) : (
         <ul className="file-list">
           {items.map((a) => (

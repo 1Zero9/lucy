@@ -149,6 +149,33 @@ export function UploadIcon(props: IconProps) {
   ));
 }
 
+export function FlashcardsIcon(props: IconProps) {
+  return base("#7C3AED")(props, (
+    <>
+      <rect x="4" y="6" width="14" height="14" rx="2" />
+      <path d="M8 6V4h12v14h-2" />
+    </>
+  ));
+}
+
+export function ResearchIcon(props: IconProps) {
+  return base("#0891B2")(props, (
+    <>
+      <path d="M9 3v6l-4 8a3 3 0 0 0 2.7 4h8.6A3 3 0 0 0 19 17l-4-8V3" />
+      <path d="M8 3h8M7 15h10" />
+    </>
+  ));
+}
+
+export function CalendarIcon(props: IconProps) {
+  return base("#EF4444")(props, (
+    <>
+      <rect x="3" y="5" width="18" height="16" rx="2" />
+      <path d="M8 3v4M16 3v4M3 10h18" />
+    </>
+  ));
+}
+
 export function HelpIcon(props: IconProps) {
   return base("#7C3AED")(props, (
     <>

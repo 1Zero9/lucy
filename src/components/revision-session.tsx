@@ -5,6 +5,8 @@ import Link from "next/link";
 import type { Flashcard } from "@/lib/db/flashcards";
 import type { Grade } from "@/lib/srs";
 import { friendlyError } from "@/lib/errors";
+import { RevisionsIcon } from "@/components/icons";
+import { EmptyState } from "@/components/empty-state";
 
 const GRADES: { grade: Grade; label: string }[] = [
   { grade: "again", label: "Again" },
@@ -50,16 +52,20 @@ export function RevisionSession({ initialQueue }: { initialQueue: Flashcard[] })
 
   if (!card) {
     return (
-      <div className="empty" style={{ padding: 40 }}>
-        <p>
-          {reviewed === 0
-            ? "Nothing is due right now."
-            : `Done — you reviewed ${reviewed} card${reviewed === 1 ? "" : "s"}.`}
-        </p>
-        <Link className="linkish" href="/flashcards">
-          Back to flashcards
-        </Link>
-      </div>
+      <EmptyState
+        icon={<RevisionsIcon size={22} />}
+        title={reviewed === 0 ? "Nothing is due right now" : "Session complete"}
+        body={
+          reviewed === 0
+            ? "New and due flashcards will appear here when it's time to revise them."
+            : `You reviewed ${reviewed} card${reviewed === 1 ? "" : "s"}. Come back when more are due.`
+        }
+        action={
+          <Link className="linkish" href="/flashcards">
+            Back to flashcards
+          </Link>
+        }
+      />
     );
   }
 

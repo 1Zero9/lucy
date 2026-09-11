@@ -4,6 +4,8 @@ import { useMemo, useState } from "react";
 import type { Task } from "@/lib/db/tasks";
 import { dueBucket, DUE_BUCKET_LABELS, DUE_BUCKET_ORDER, type DueBucket } from "@/lib/due";
 import { friendlyError } from "@/lib/errors";
+import { TasksIcon } from "@/components/icons";
+import { EmptyState } from "@/components/empty-state";
 
 async function jsonOrThrow(res: Response) {
   const body: unknown = await res.json().catch(() => ({}));
@@ -209,7 +211,11 @@ export function TasksView({
       ))}
 
       {open.length === 0 ? (
-        <div className="empty">Nothing open. Add a task above.</div>
+        <EmptyState
+          icon={<TasksIcon size={22} />}
+          title="Nothing open"
+          body="Deadlines and to-dos you add above will show up here, grouped by how soon they're due."
+        />
       ) : (
         DUE_BUCKET_ORDER.map((b) => {
           const list = groups.get(b);

@@ -48,6 +48,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
 
   return (
     <form className="auth-card" onSubmit={onSubmit} noValidate>
+      <img className="auth-mark" src="/icons/lucy-app-icon-64.png" alt="" width={40} height={40} />
       <h1>{isSignup ? "Create your account" : "Sign in to LUCY"}</h1>
       <p className="sub">
         {isSignup ? "Your private learning workspace." : "Welcome back."}
