@@ -7,6 +7,19 @@ for a pre-1.0 foundation build.
 
 ## [Unreleased]
 
+## [0.14.1] — 2026-09-11
+### Fixed
+- The deployed dev site was still showing `v0.13.1` — 0.14.0 was deployed
+  before its version-bump commit, so the shipped build predated the bump.
+  Redeployed; live site now correctly shows `v0.14.0`.
+- The sticky/100dvh sidebar treatment (0.13.1) leaked into the mobile
+  layout, where `.shell` collapses to `display: block` and the sidebar
+  becomes a slim icon strip — the un-reset `position: sticky; height:
+  100dvh` pinned that strip open at full viewport height, pushing the
+  entire page below the fold on phones. Reset to `position: static;
+  height: auto` under the 760px breakpoint; the version label is hidden
+  on mobile (no natural slot there yet — see 0.13.0's Limitations note).
+
 ## [0.14.0] — 2026-09-11
 ### Added
 - **Forgot password**: a "Forgot password?" link on the sign-in screen,

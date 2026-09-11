@@ -1151,7 +1151,15 @@ h2.overdue { color: var(--error); }
     border-right: 0;
     border-bottom: 1px solid var(--border);
     padding: 12px 16px;
+    /* On phones the sidebar becomes a slim top strip (icons only), not a
+       full-height column — undo the desktop sticky/100dvh treatment or it
+       pins the strip open at full viewport height and pushes the whole
+       page below the fold. */
+    position: static;
+    height: auto;
+    overflow-y: visible;
   }
+  .sidebar-version { display: none; }
   .brand { margin-bottom: 8px; }
   .nav-label { display: none; }
   .nav-group + .nav-group { margin-top: 0; }
