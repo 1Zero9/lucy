@@ -7,6 +7,32 @@ for a pre-1.0 foundation build.
 
 ## [Unreleased]
 
+## [0.17.0] — 2026-09-11
+### Added
+- **Subjects are now places to work** (UPGRADE.md §1): module cards open
+  into a new `/modules/:id` page showing that subject's notes and
+  flashcards, instead of only offering Rename/Delete. New notes created
+  there are assigned to the subject automatically; new flashcards default
+  to it too.
+- **Note → subject**: the note editor's meta bar gained a visible "Subject"
+  field (the first field, ahead of Pin/colour/folder/tags) that reassigns
+  the note's module — `PATCH /api/notes/:id` now accepts `moduleId`, with
+  the same same-workspace ownership check the folder field already had.
+- **Note → flashcard**: the flashcard create form now accepts an optional
+  source note ("From note"); the flashcards list and revision session both
+  show "Open source note" linking back to it.
+- **Note → note**: a new "Link to another note" toolbar button (distinct
+  from the raw-URL link button) searches workspace note titles and inserts
+  an id-based link — it keeps working even after the target note is
+  renamed.
+- **Flashcard → source**: a compact "Flashcards from this note" section
+  now appears under a note when it has any.
+### Fixed
+- `.btn` was missing `text-decoration: none`, so a `<Link>` styled as a
+  button (e.g. "Review 3 cards") rendered with a browser-default
+  underline. Also relabelled "Revise N due" → "Review N cards" and
+  "Add" → "Add flashcard" for clearer button language (UPGRADE.md §4).
+
 ## [0.16.0] — 2026-09-11
 ### Fixed
 - **Offline save/recovery** (`src/lib/offline/sync.ts`): `flush()` was

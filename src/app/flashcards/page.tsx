@@ -5,6 +5,7 @@ import { getDb } from "@/lib/db";
 import { resolveActiveWorkspace } from "@/lib/workspace-context";
 import { listFlashcards, listDueFlashcards } from "@/lib/db/flashcards";
 import { listModules } from "@/lib/db/modules";
+import { listNotes } from "@/lib/db/notes";
 import { AppShell } from "@/components/app-shell";
 import { FlashcardsManager } from "@/components/flashcards-manager";
 
@@ -16,10 +17,11 @@ export default async function FlashcardsPage() {
   if (!active) redirect("/onboarding");
 
   const db = getDb();
-  const [cards, modules, due] = await Promise.all([
+  const [cards, modules, due, notes] = await Promise.all([
     listFlashcards(db, user.id, active.id),
     listModules(db, user.id, active.id),
-    listDueFlashcards(db, user.id, active.id)
+    listDueFlashcards(db, user.id, active.id),
+    listNotes(db, user.id, active.id)
   ]);
 
   return (
@@ -33,15 +35,20 @@ export default async function FlashcardsPage() {
         </div>
         {due.length > 0 ? (
           <Link className="btn" href="/revise" style={{ width: "auto", padding: "0 16px" }}>
-            Revise {due.length} due
+            Review {due.length} card{due.length === 1 ? "" : "s"}
           </Link>
         ) : (
           <Link className="linkish" href="/revise">
-            Revision
+            Go to revision
           </Link>
         )}
       </div>
-      <FlashcardsManager workspaceId={active.id} initialCards={cards} modules={modules} />
+      <FlashcardsManager
+        workspaceId={active.id}
+        initialCards={cards}
+        modules={modules}
+        notes={notes.map((n) => ({ id: n.id, title: n.title }))}
+      />
     </AppShell>
   );
 }

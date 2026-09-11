@@ -1,11 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import type { Flashcard } from "@/lib/db/flashcards";
 import type { Module } from "@/lib/db/modules";
 import { friendlyError } from "@/lib/errors";
 import { FlashcardsIcon } from "@/components/icons";
 import { EmptyState } from "@/components/empty-state";
+
+type NoteRef = { id: string; title: string };
 
 async function jsonOrThrow(res: Response) {
   const body: unknown = await res.json().catch(() => ({}));
@@ -16,17 +19,28 @@ async function jsonOrThrow(res: Response) {
 export function FlashcardsManager({
   workspaceId,
   initialCards,
-  modules
+  modules,
+  notes = [],
+  defaultModuleId,
+  hideModuleGrouping = false
 }: {
   workspaceId: string;
   initialCards: Flashcard[];
   modules: Module[];
+  notes?: NoteRef[];
+  /** Pre-select a subject on the create form — used on a module's own page
+   *  so new cards are assigned there without an extra click. */
+  defaultModuleId?: string;
+  /** Module's own page already groups by definition — skip the per-module
+   *  section headers there. */
+  hideModuleGrouping?: boolean;
 }) {
   const [cards, setCards] = useState<Flashcard[]>(initialCards);
   const [deleted, setDeleted] = useState<Flashcard[]>([]);
   const [front, setFront] = useState("");
   const [back, setBack] = useState("");
-  const [moduleId, setModuleId] = useState("");
+  const [moduleId, setModuleId] = useState(defaultModuleId ?? "");
+  const [noteId, setNoteId] = useState("");
   const [editing, setEditing] = useState<string | null>(null);
   const [ef, setEf] = useState("");
   const [eb, setEb] = useState("");
@@ -34,6 +48,7 @@ export function FlashcardsManager({
 
   const moduleName = (id: string | null) =>
     id ? (modules.find((m) => m.id === id)?.name ?? "Module") : "No module";
+  const noteTitle = (id: string | null) => (id ? notes.find((n) => n.id === id)?.title : undefined);
 
   async function add(e: React.FormEvent) {
     e.preventDefault();
@@ -44,12 +59,18 @@ export function FlashcardsManager({
         await fetch(`/api/workspaces/${workspaceId}/flashcards`, {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ front: front.trim(), back: back.trim(), moduleId: moduleId || null })
+          body: JSON.stringify({
+            front: front.trim(),
+            back: back.trim(),
+            moduleId: moduleId || null,
+            noteId: noteId || null
+          })
         })
       )) as { card: Flashcard };
       setCards((c) => [...c, card]);
       setFront("");
       setBack("");
+      setNoteId("");
     } catch (e2) {
       setError(friendlyError(e2));
     }
@@ -112,16 +133,26 @@ export function FlashcardsManager({
       <form className="inline-form" onSubmit={add} style={{ marginBottom: 18, alignItems: "start" }}>
         <input aria-label="Front" placeholder="Front (prompt)" value={front} onChange={(e) => setFront(e.target.value)} />
         <input aria-label="Back" placeholder="Back (answer)" value={back} onChange={(e) => setBack(e.target.value)} />
-        <select aria-label="Module" value={moduleId} onChange={(e) => setModuleId(e.target.value)}>
-          <option value="">No module</option>
+        <select aria-label="Subject" value={moduleId} onChange={(e) => setModuleId(e.target.value)}>
+          <option value="">No subject</option>
           {modules.map((m) => (
             <option key={m.id} value={m.id}>
               {m.name}
             </option>
           ))}
         </select>
+        {notes.length > 0 ? (
+          <select aria-label="From note" value={noteId} onChange={(e) => setNoteId(e.target.value)}>
+            <option value="">Not from a note</option>
+            {notes.map((n) => (
+              <option key={n.id} value={n.id}>
+                From: {n.title}
+              </option>
+            ))}
+          </select>
+        ) : null}
         <button className="btn" type="submit" disabled={!front.trim() || !back.trim()}>
-          Add
+          Add flashcard
         </button>
       </form>
 
@@ -141,13 +172,16 @@ export function FlashcardsManager({
           body="Add a front and back above — they'll show up in Revision when they're due."
         />
       ) : (
-        [...groups.entries()].map(([mid, list]) => (
+        (hideModuleGrouping ? ([["__all__", cards]] as [string, Flashcard[]][]) : [...groups.entries()]).map(
+          ([mid, list]) => (
           <section key={mid || "none"} className="task-group">
-            <div className="section-head">
-              <h2>
-                {moduleName(mid || null)} <span className="muted">({list.length})</span>
-              </h2>
-            </div>
+            {hideModuleGrouping ? null : (
+              <div className="section-head">
+                <h2>
+                  {moduleName(mid || null)} <span className="muted">({list.length})</span>
+                </h2>
+              </div>
+            )}
             <ul className="note-list">
               {list.map((c) => (
                 <li key={c.id}>
@@ -173,6 +207,11 @@ export function FlashcardsManager({
                           {c.due_at ? `Due ${new Date(c.due_at).toLocaleDateString()}` : "New"} · {c.reps} review
                           {c.reps === 1 ? "" : "s"}
                         </span>
+                        {c.note_id && noteTitle(c.note_id) ? (
+                          <Link className="linkish" href={`/notes/${c.note_id}`} style={{ fontSize: 12 }}>
+                            Open source note: {noteTitle(c.note_id)}
+                          </Link>
+                        ) : null}
                         <div className="row">
                           <button
                             className="linkish"

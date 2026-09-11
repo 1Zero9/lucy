@@ -38,12 +38,18 @@ function ago(iso: string): string {
   return `${Math.floor(s / 86400)} d ago`;
 }
 
+type NoteRef = { id: string; title: string };
+
 export function NoteEditor({
   note,
-  initialVersions
+  initialVersions,
+  workspaceNotes = []
 }: {
   note: Note;
   initialVersions: NoteVersion[];
+  /** Other notes in the workspace, for "Link to note" (UPGRADE.md §2: search
+   *  titles, insert a reference that survives the target being renamed). */
+  workspaceNotes?: NoteRef[];
 }) {
   const router = useRouter();
   const { data: session } = useSession();
@@ -56,6 +62,8 @@ export function NoteEditor({
   const [preview, setPreview] = useState<NoteVersion | null>(null);
   const [sync, setSync] = useState<SyncState>(getSyncState());
   const [dirty, setDirty] = useState(false);
+  const [linkPickerOpen, setLinkPickerOpen] = useState(false);
+  const [linkQuery, setLinkQuery] = useState("");
 
   const bodyRef = useRef<HTMLTextAreaElement>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -176,6 +184,27 @@ export function NoteEditor({
     });
   }
 
+  // Insert a link at the cursor pointing at another note by id, so it keeps
+  // working even after that note is retitled — only the visible text here
+  // can go stale, the link itself never breaks (UPGRADE.md §2).
+  function insertNoteLink(target: NoteRef) {
+    const el = bodyRef.current;
+    const s = el ? el.selectionStart : text.length;
+    const e = el ? el.selectionEnd : text.length;
+    const markdown = `[${target.title}](/notes/${target.id})`;
+    onEdit({ text: text.slice(0, s) + markdown + text.slice(e) });
+    setLinkPickerOpen(false);
+    setLinkQuery("");
+    requestAnimationFrame(() => {
+      el?.focus();
+      if (el) el.selectionStart = el.selectionEnd = s + markdown.length;
+    });
+  }
+
+  const linkMatches = workspaceNotes
+    .filter((n) => n.id !== note.id && n.title.toLowerCase().includes(linkQuery.trim().toLowerCase()))
+    .slice(0, 8);
+
   async function del() {
     try {
       await apiJson(`/api/notes/${note.id}`, { method: "DELETE" });
@@ -288,9 +317,19 @@ export function NoteEditor({
         <button type="button" onClick={() => linePrefix("> ")} title="Quote">
           ❝
         </button>
-        <button type="button" onClick={() => surround("[", "](https://)", "link")} title="Link">
+        <button type="button" onClick={() => surround("[", "](https://)", "link")} title="Link to a URL">
           🔗
         </button>
+        {workspaceNotes.length > 0 ? (
+          <button
+            type="button"
+            onClick={() => setLinkPickerOpen((v) => !v)}
+            aria-expanded={linkPickerOpen}
+            title="Link to another note"
+          >
+            📝🔗
+          </button>
+        ) : null}
         <span className="sep" />
         <span className="view-toggle" role="group" aria-label="View">
           {(["write", "split", "preview"] as Mode[]).map((m) => (
@@ -306,6 +345,38 @@ export function NoteEditor({
           ))}
         </span>
       </div>
+
+      {linkPickerOpen ? (
+        <div className="link-picker" role="dialog" aria-label="Link to another note">
+          <input
+            autoFocus
+            aria-label="Search notes by title"
+            placeholder="Search notes by title…"
+            value={linkQuery}
+            onChange={(e) => setLinkQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Escape") setLinkPickerOpen(false);
+            }}
+          />
+          {linkQuery.trim() ? (
+            linkMatches.length === 0 ? (
+              <p className="muted" style={{ padding: "8px 4px" }}>
+                No matching notes.
+              </p>
+            ) : (
+              <ul className="link-picker-results">
+                {linkMatches.map((n) => (
+                  <li key={n.id}>
+                    <button type="button" onClick={() => insertNoteLink(n)}>
+                      {n.title}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )
+          ) : null}
+        </div>
+      ) : null}
 
       <div className={`editor-panes mode-${mode}`}>
         {mode !== "preview" ? (

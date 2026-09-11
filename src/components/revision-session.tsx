@@ -89,6 +89,13 @@ export function RevisionSession({ initialQueue }: { initialQueue: Flashcard[] })
           </>
         ) : null}
       </div>
+      {revealed && card.note_id ? (
+        <p style={{ textAlign: "center" }}>
+          <Link className="linkish" href={`/notes/${card.note_id}`}>
+            Open source note
+          </Link>
+        </p>
+      ) : null}
 
       {revealed ? (
         <div className="revise-grades">

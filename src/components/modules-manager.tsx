@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import type { Module } from "@/lib/db/modules";
 import { friendlyError } from "@/lib/errors";
 import { ModulesIcon } from "@/components/icons";
@@ -165,9 +166,11 @@ export function ModulesManager({ workspaceId, initialModules }: Props) {
                 </form>
               ) : (
                 <>
-                  {mod.code ? <span className="code">{mod.code}</span> : null}
-                  <h3>{mod.name}</h3>
-                  {mod.description ? <p className="muted">{mod.description}</p> : null}
+                  <Link href={`/modules/${mod.id}`} style={{ textDecoration: "none", color: "inherit" }}>
+                    {mod.code ? <span className="code">{mod.code}</span> : null}
+                    <h3>{mod.name}</h3>
+                    {mod.description ? <p className="muted">{mod.description}</p> : null}
+                  </Link>
                   <div className="row">
                     <button
                       className="linkish"

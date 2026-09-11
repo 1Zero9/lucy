@@ -2,6 +2,7 @@ import { withUser, readJsonBody, jsonError } from "@/lib/api";
 import { getDb } from "@/lib/db";
 import { getNote, updateNote, softDeleteNote } from "@/lib/db/notes";
 import { getFolder } from "@/lib/db/folders";
+import { getModule } from "@/lib/db/modules";
 import { isConflict } from "@/lib/offline/conflict";
 import {
   asObject,
@@ -39,6 +40,7 @@ export const PATCH = withUser(async (user, request, { params }) => {
     colour?: string | null;
     isPinned?: boolean;
     folderId?: string | null;
+    moduleId?: string | null;
   } = {};
 
   if ("title" in body) patch.title = optionalString(body.title, { field: "Title", max: 200 }) ?? "";
@@ -57,6 +59,16 @@ export const PATCH = withUser(async (user, request, { params }) => {
       }
     }
     patch.folderId = folderId;
+  }
+  if ("moduleId" in body) {
+    const moduleId = optionalString(body.moduleId, { field: "moduleId", max: 64 });
+    if (moduleId) {
+      const mod = await getModule(db, user.id, moduleId);
+      if (!mod || mod.workspace_id !== note.workspace_id) {
+        return jsonError(400, "That module is not in this workspace.");
+      }
+    }
+    patch.moduleId = moduleId;
   }
 
   if (Object.keys(patch).length === 0) throw new ValidationError("Nothing to update.");

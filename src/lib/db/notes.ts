@@ -48,6 +48,7 @@ export type NoteListOpts = {
   /** null = notes with no folder; string = that folder; undefined = any. */
   folderId?: string | null;
   tagId?: string;
+  moduleId?: string;
 };
 
 export async function listNotes(
@@ -66,6 +67,11 @@ export async function listNotes(
   } else if (typeof opts.folderId === "string") {
     where.push("n.folder_id = ?");
     values.push(opts.folderId);
+  }
+
+  if (opts.moduleId) {
+    where.push("n.module_id = ?");
+    values.push(opts.moduleId);
   }
 
   let join = "";
@@ -163,6 +169,7 @@ export type NotePatch = {
   colour?: string | null;
   isPinned?: boolean;
   folderId?: string | null;
+  moduleId?: string | null;
 };
 
 /**
@@ -197,6 +204,10 @@ export async function updateNote(
   if (patch.folderId !== undefined) {
     sets.push("folder_id = ?");
     values.push(patch.folderId);
+  }
+  if (patch.moduleId !== undefined) {
+    sets.push("module_id = ?");
+    values.push(patch.moduleId);
   }
   const metaChanged = sets.length > 0;
 

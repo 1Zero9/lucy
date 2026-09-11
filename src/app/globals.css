@@ -332,6 +332,10 @@ html[data-env="dev"] .auth {
   color: #fff;
   font-weight: 600;
   cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   transition: background-color 140ms ease, transform 100ms ease;
 }
 
@@ -839,6 +843,45 @@ html[data-env="dev"] .auth {
   background: #EDE9FE;
   color: #5B21B6;
 }
+
+.link-picker {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+  padding: 10px;
+  margin-top: 8px;
+  display: grid;
+  gap: 6px;
+}
+
+.link-picker input {
+  min-height: 36px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0 10px;
+}
+
+.link-picker-results {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.link-picker-results button {
+  width: 100%;
+  text-align: left;
+  min-height: 36px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  cursor: pointer;
+}
+
+.link-picker-results button:hover { background: var(--background); }
 
 .editor-panes.mode-split {
   display: grid;

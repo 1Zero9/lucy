@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { Folder } from "@/lib/db/folders";
 import type { Tag } from "@/lib/db/tags";
+import type { Module } from "@/lib/db/modules";
 import { friendlyError } from "@/lib/errors";
 
 const PALETTE = ["#EDE9FE", "#DBEAFE", "#DCFCE7", "#FEF9C3", "#FEE2E2", "#F3E8FF"];
@@ -25,6 +26,8 @@ export function NoteMetaBar({
   initialColour,
   initialPinned,
   initialFolderId,
+  initialModuleId,
+  modules,
   folders,
   initialTags,
   allTags
@@ -33,6 +36,8 @@ export function NoteMetaBar({
   initialColour: string | null;
   initialPinned: boolean;
   initialFolderId: string | null;
+  initialModuleId: string | null;
+  modules: Module[];
   folders: Folder[];
   initialTags: Tag[];
   allTags: Tag[];
@@ -40,6 +45,7 @@ export function NoteMetaBar({
   const [colour, setColour] = useState(initialColour);
   const [pinned, setPinned] = useState(initialPinned);
   const [folderId, setFolderId] = useState(initialFolderId ?? "");
+  const [moduleId, setModuleId] = useState(initialModuleId ?? "");
   const [tags, setTags] = useState<string[]>(initialTags.map((t) => t.name));
   const [draft, setDraft] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -75,6 +81,25 @@ export function NoteMetaBar({
           {error}
         </span>
       ) : null}
+
+      <label className="meta-field subject-field">
+        <span className="muted">Subject</span>
+        <select
+          value={moduleId}
+          onChange={(e) => {
+            const v = e.target.value;
+            setModuleId(v);
+            patch({ moduleId: v || null });
+          }}
+        >
+          <option value="">No subject</option>
+          {modules.map((m) => (
+            <option key={m.id} value={m.id}>
+              {m.name}
+            </option>
+          ))}
+        </select>
+      </label>
 
       <button
         type="button"

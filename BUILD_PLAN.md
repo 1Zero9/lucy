@@ -125,21 +125,34 @@ not silently authored.
       harness in this repo (node --test has no indexedDB) — needs a manual
       two-account-in-one-browser smoke test before calling it fully proven.
 
-### 8B — One complete subject → note → flashcard → source-note journey
+### 8B — One complete subject → note → flashcard → source-note journey — done, v0.17.0
 (UPGRADE.md §1–2, the "smallest complete task" from the recommended order,
 not the full IA rework)
-- [ ] Module page opens into its notes (and, alongside, its files and
-      flashcards) instead of only exposing Rename/Delete
-- [ ] Creating a note/file/flashcard from within a module assigns it to that
-      module automatically
-- [ ] Note editor shows a visible subject/module label; clicking it opens a
-      searchable "Move to subject" picker (update endpoint gains module
-      reassignment)
-- [ ] Flashcard create form accepts an optional source note id (API already
-      supports it); revision/flashcard views show "Open source note"
-- [ ] Note editor's "Link to note" searches titles and inserts a stable
-      reference that survives the target note being renamed
-- [ ] A compact "related" section under a note surfaces its flashcards
+- [x] Module page (`/modules/:id`) opens into its notes and flashcards;
+      module cards on `/modules` are clickable through to it (Rename/Delete
+      moved off the card face into the module page itself). Files-by-module
+      explicitly out of scope — attachments aren't module-scoped in the
+      schema (noted in the page's own doc comment).
+- [x] Creating a note from within a module (`NewNoteButton moduleId=`)
+      assigns it to that module automatically; flashcards created on a
+      module's page default to it too (`defaultModuleId`)
+- [x] Note editor shows a visible "Subject" field (first field in the meta
+      bar, ahead of Pin/colour/folder/tags per the brief); PATCH
+      /api/notes/:id gained `moduleId` reassignment with a same-workspace
+      ownership check
+- [x] Flashcard create form accepts an optional source note (`notes` prop,
+      "From note" select); flashcards list and revision session both show
+      "Open source note" linking back to it
+- [x] Note editor's "Link to note" (new toolbar button, separate from the
+      raw-URL link button) searches workspace note titles and inserts
+      `[title](/notes/id)` — the link is id-based so it keeps working after
+      the target note is renamed, even though the visible text can go stale
+- [x] A compact "Flashcards from this note" section under a note surfaces
+      cards sourced from it
+- [x] Incidental fix: `.btn` had no `text-decoration: none`, so a Link
+      styled as a button (e.g. "Review N cards") rendered underlined —
+      exactly the §4 finding. Also relabelled "Revise N due" -> "Review N
+      cards" / "Add" -> "Add flashcard" for explicit button language.
 
 ### 8C — Editor and controls (UPGRADE.md §3–5)
 - [ ] Formatted (WYSIWYG-ish) editing by default — bold looks bold, headings
