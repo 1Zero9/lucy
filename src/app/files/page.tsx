@@ -27,7 +27,8 @@ export default async function FilesPage() {
       </div>
       <p className="muted" style={{ marginTop: 0 }}>
         Everything you&apos;ve uploaded in this workspace. Files stay private — they&apos;re only
-        served to you through the app.
+        served to you through the app. Files need a connection to open or upload; only notes
+        work offline.
       </p>
       <AttachmentsManager workspaceId={active.id} initialAttachments={attachments} />
     </AppShell>

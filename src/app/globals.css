@@ -90,15 +90,34 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   overflow-y: auto;
 }
 
+.sidebar-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-8);
+}
+
 .brand {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: var(--space-8);
   text-decoration: none;
 }
 
 .brand img { width: 28px; height: 28px; border-radius: var(--radius-sm); display: block; }
+
+/* Phones only — see .sidebar-top comment in app-shell.tsx. */
+.sidebar-more-link {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+}
+
+.sidebar-more-link:hover { background: var(--background); }
 
 .sidebar-version {
   margin-top: auto;
@@ -150,8 +169,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .nav a:hover { background: var(--background); }
 
 .nav a[aria-current="page"] {
-  background: #EDE9FE;
-  color: #5B21B6;
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
+  color: var(--primary-strong);
+  font-weight: 600;
 }
 
 .nav a[aria-disabled="true"] {
@@ -376,6 +396,36 @@ html[data-env="dev"] .auth {
   color: var(--muted);
 }
 
+/* --- /more (mobile-only secondary nav landing) --- */
+
+.more-list {
+  list-style: none;
+  margin: 0 0 28px;
+  padding: 0;
+  border-top: 1px solid var(--border);
+}
+
+.more-list li { border-bottom: 1px solid var(--border); }
+
+.more-list a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  text-decoration: none;
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.more-account {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 8px;
+}
+
 /* --- workspace / module views (Phase 1B) --- */
 
 .section-head {
@@ -578,6 +628,82 @@ html[data-env="dev"] .auth {
 .note-list-title { font-weight: 600; }
 .note-list-snippet { font-size: 14px; }
 .note-list-meta { font-size: 12px; }
+
+/* --- Home: Continue / Today / Workspace (UPGRADE.md) --- */
+
+.continue-featured {
+  display: grid;
+  gap: 6px;
+  text-decoration: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+  padding: 20px 22px;
+  margin-bottom: 10px;
+}
+
+.continue-featured .note-list-title { font-size: 17px; }
+.continue-featured .note-list-snippet { margin-top: 2px; }
+
+.continue-compact a { padding: 10px 16px; }
+.continue-compact .note-list-title { font-size: 14px; font-weight: 500; }
+
+.today-card {
+  display: grid;
+  grid-template-columns: 1fr 220px;
+  gap: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  padding: 18px 20px;
+}
+
+.today-next {
+  display: grid;
+  gap: 2px;
+  align-content: start;
+  padding-left: 20px;
+  border-left: 1px solid var(--border);
+  font-size: 14px;
+}
+
+.today-next .k {
+  font-size: 12px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.workspace-links {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.workspace-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 0 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  text-decoration: none;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.workspace-link:hover { background: var(--background); }
+
+.workspace-link .count {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 400;
+}
 
 .note-editor {
   display: grid;
@@ -924,21 +1050,6 @@ label.btn { display: inline-flex; align-items: center; cursor: pointer; }
 
 /* --- quick organisation: tasks & stickies (Phase 4) --- */
 
-.home-summary {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 20px;
-  margin: 24px 0;
-}
-
-.home-cols {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 28px;
-  margin-top: 8px;
-}
-
 .mini-list {
   list-style: none;
   margin: 0;
@@ -1143,7 +1254,8 @@ h2.overdue { color: var(--error); }
 
 @media (max-width: 760px) {
   .revise-grades { grid-template-columns: repeat(2, 1fr); }
-  .home-cols { grid-template-columns: 1fr; gap: 20px; }
+  .today-card { grid-template-columns: 1fr; }
+  .workspace-links { grid-template-columns: 1fr; }
   .editor-panes.mode-split { grid-template-columns: 1fr; }
   .file-list li { flex-wrap: wrap; }
   .shell { display: block; }
@@ -1151,7 +1263,7 @@ h2.overdue { color: var(--error); }
     border-right: 0;
     border-bottom: 1px solid var(--border);
     padding: 12px 16px;
-    /* On phones the sidebar becomes a slim top strip (icons only), not a
+    /* On phones the sidebar is a slim header strip (brand + "More"), not a
        full-height column — undo the desktop sticky/100dvh treatment or it
        pins the strip open at full viewport height and pushes the whole
        page below the fold. */
@@ -1160,28 +1272,12 @@ h2.overdue { color: var(--error); }
     overflow-y: visible;
   }
   .sidebar-version { display: none; }
-  .brand { margin-bottom: 8px; }
-  .nav-label { display: none; }
-  .nav-group + .nav-group { margin-top: 0; }
-
-  /* Home / Search / Modules / Tasks move to the fixed bottom bar on phones;
-     the rest (Notes, Files, Study, Workspaces, Settings) stay one scroll away. */
-  .nav a.nav-mobile-hide { display: none; }
-  .nav {
-    display: flex;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    gap: 6px;
-    padding-bottom: 2px;
-    -webkit-overflow-scrolling: touch;
-  }
-  .nav a {
-    justify-content: center;
-    padding: 0 14px;
-    font-size: 13px;
-    min-height: 40px;
-    flex: 0 0 auto;
-  }
+  .sidebar-top { margin-bottom: 0; }
+  .sidebar-more-link { display: flex; }
+  /* Home, Modules, Tasks and Search already live on the fixed bottom bar;
+     everything else (Notes, Files, Study, Workspaces, Help, Settings) is one
+     tap away at /more instead of a duplicated horizontal strip here. */
+  .nav-group { display: none; }
 
   .main { padding: 20px 16px calc(84px + env(safe-area-inset-bottom, 0px)); }
   .cards { grid-template-columns: 1fr; }

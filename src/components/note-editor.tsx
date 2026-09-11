@@ -200,7 +200,7 @@ export function NoteEditor({
   function statusLabel(): { text: string; kind: string } {
     if (sync.error) return { text: sync.error, kind: "error" };
     if (!sync.online && (dirty || sync.pending > 0)) {
-      return { text: "Saved on this device — will sync when online", kind: "offline" };
+      return { text: "Offline — saved locally", kind: "offline" };
     }
     if (sync.syncing) return { text: "Saving…", kind: "saving" };
     if (dirty || sync.pending > 0) return { text: "Saving…", kind: "saving" };

@@ -6,6 +6,7 @@ import {
   HelpIcon,
   HomeIcon,
   ModulesIcon,
+  MoreIcon,
   NotesIcon,
   RevisionsIcon,
   SearchIcon,
@@ -32,16 +33,14 @@ type NavItem = {
   href: string;
   label: string;
   icon: typeof HomeIcon;
-  /** Also on the mobile bottom bar (MobileNav) — drop the duplicate from this list on phones. */
-  onMobileBar?: boolean;
 };
 
 const PRIMARY: NavItem[] = [
-  { section: "home", href: "/", label: "Home", icon: HomeIcon, onMobileBar: true },
-  { section: "search", href: "/search", label: "Search", icon: SearchIcon, onMobileBar: true },
+  { section: "home", href: "/", label: "Home", icon: HomeIcon },
+  { section: "search", href: "/search", label: "Search", icon: SearchIcon },
   { section: "notes", href: "/notes", label: "Notes", icon: NotesIcon },
-  { section: "modules", href: "/modules", label: "Modules", icon: ModulesIcon, onMobileBar: true },
-  { section: "tasks", href: "/tasks", label: "Tasks", icon: TasksIcon, onMobileBar: true }
+  { section: "modules", href: "/modules", label: "Modules", icon: ModulesIcon },
+  { section: "tasks", href: "/tasks", label: "Tasks", icon: TasksIcon }
 ];
 
 // "Study" groups Research / Flashcards / Revision / Drawing behind one hub
@@ -71,13 +70,8 @@ function NavGroup({
     <div className="nav-group">
       {label ? <div className="nav-label">{label}</div> : null}
       <nav className="nav" aria-label={label ?? "Primary"}>
-        {items.map(({ section, href, label: text, icon: Icon, onMobileBar }) => (
-          <Link
-            key={section}
-            href={href}
-            className={onMobileBar ? "nav-mobile-hide" : undefined}
-            aria-current={active === section ? "page" : undefined}
-          >
+        {items.map(({ section, href, label: text, icon: Icon }) => (
+          <Link key={section} href={href} aria-current={active === section ? "page" : undefined}>
             <Icon size={20} />
             {text}
           </Link>
@@ -100,10 +94,18 @@ export function AppShell({
   return (
     <div className="shell">
       <aside className="sidebar">
-        <Link href="/" className="brand" aria-label="LUCY home">
-          <img src="/icons/lucy-app-icon-64.png" alt="" width={28} height={28} />
-          <span>LUCY</span>
-        </Link>
+        <div className="sidebar-top">
+          <Link href="/" className="brand" aria-label="LUCY home">
+            <img src="/icons/lucy-app-icon-64.png" alt="" width={28} height={28} />
+            <span>LUCY</span>
+          </Link>
+          {/* Phones only — everything below the bottom bar (Notes, Files,
+              Study, Workspaces, Help, Settings, sign out) lives at /more
+              instead of a duplicated horizontal nav strip. */}
+          <Link href="/more" className="sidebar-more-link" aria-label="More">
+            <MoreIcon size={20} />
+          </Link>
+        </div>
         <NavGroup items={PRIMARY} active={active} />
         <NavGroup label="Study" items={SECONDARY} active={active} />
         <NavGroup label="Account" items={UTILITY} active={active} />

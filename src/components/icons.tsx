@@ -186,6 +186,16 @@ export function HelpIcon(props: IconProps) {
   ));
 }
 
+export function MoreIcon(props: IconProps) {
+  return base("#64748B")(props, (
+    <>
+      <circle cx="5" cy="12" r="1.6" />
+      <circle cx="12" cy="12" r="1.6" />
+      <circle cx="19" cy="12" r="1.6" />
+    </>
+  ));
+}
+
 export function CameraIcon(props: IconProps) {
   return base("#2563EB")(props, (
     <>

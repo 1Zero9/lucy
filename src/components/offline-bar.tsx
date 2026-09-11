@@ -20,13 +20,16 @@ export function OfflineBar() {
     return unsub;
   }, []);
 
-  const show = !s.online || s.pending > 0 || s.error !== null;
+  // Only surface the banner when there's actionable unsynced work — merely
+  // being offline with nothing queued shouldn't dominate ordinary browsing
+  // or the sign-in screen (UPGRADE.md — offline messaging should be quiet).
+  const show = s.pending > 0 || s.error !== null;
   if (!show) return null;
 
   let message: string;
   if (s.error) message = s.error;
-  else if (!s.online) message = "You’re offline. Saved on this device — we’ll sync when you reconnect.";
-  else message = "Syncing changes…";
+  else if (!s.online) message = "Offline — saved locally. We’ll sync when you reconnect.";
+  else message = "Syncing…";
 
   return (
     <div className={`offline-bar${s.error ? " is-error" : !s.online ? " is-offline" : ""}`} role="status">

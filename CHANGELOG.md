@@ -7,6 +7,43 @@ for a pre-1.0 foundation build.
 
 ## [Unreleased]
 
+## [0.15.0] — 2026-09-11
+### Changed
+- **Home Experience Upgrade** (UPGRADE.md), a full recomposition of the
+  authenticated Home screen around three groups — Continue, Today,
+  Workspace — instead of five same-weight panels:
+  - **Continue**: one featured (most recently edited/pinned) note in a
+    larger card with a text snippet, then up to three compact rows.
+  - **Today**: one card combining due/overdue tasks with the next
+    upcoming deadline, instead of separate "Today" and "Coming up" panels.
+  - **Workspace**: three quiet links (Stickies, Files, Modules) with
+    counts, replacing the old full-weight Stickies/Recent-files panels
+    and the standalone module grid.
+  - Removed the "who am I / sign out" row from Home — reachable via
+    Settings (desktop) or the new /more page (mobile) instead.
+  - Standardised secondary-link copy to "View all" everywhere on Home
+    (was a mix of "All tasks", "Open board", "All files", "Manage
+    modules").
+- **Mobile navigation**: the horizontal strip that duplicated the desktop
+  sidebar nav above mobile content is gone. The bottom bar (Home, Modules,
+  Create, Tasks, Search) is unchanged; everything else (Notes, Files,
+  Study, Workspaces, Help, Settings, sign out) now lives at the new
+  `/more` page, reached via a compact icon next to the LUCY mark.
+- **Desktop nav**: the active-item pill is smaller and less saturated —
+  a subtle tinted background with primary-coloured text instead of a
+  solid light-purple fill, so the page content carries the visual weight.
+- **Offline/sync copy**: the global offline banner now shows only when
+  there's actual unsynced work (pending changes or an error), not for
+  merely being offline with nothing at risk — it no longer competes with
+  ordinary browsing or the sign-in screen. Wording standardised to
+  "Offline — saved locally" / "Syncing…" in both the banner and the note
+  editor's inline status. Files page now states plainly that files need a
+  connection (only notes work offline).
+### Fixed
+- A CSS class (`.nav-group`) is now hidden outright on mobile instead of
+  per-item — simpler and matches the new `/more` destination; the dead
+  `onMobileBar`/`nav-mobile-hide` mechanism it replaced is removed.
+
 ## [0.14.1] — 2026-09-11
 ### Fixed
 - The deployed dev site was still showing `v0.13.1` — 0.14.0 was deployed
