@@ -16,6 +16,7 @@ import {
   UploadIcon
 } from "@/components/icons";
 import type { Section } from "@/components/app-shell";
+import { friendlyError } from "@/lib/errors";
 
 async function postJson<T>(path: string, body: unknown): Promise<T> {
   const res = await fetch(path, {
@@ -64,7 +65,7 @@ export function MobileNav({ active, workspaceId }: { active?: Section; workspace
       await fn();
       close();
     } catch (e) {
-      setError((e as Error).message);
+      setError(friendlyError(e));
     } finally {
       setBusy(null);
     }

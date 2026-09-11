@@ -7,6 +7,33 @@ for a pre-1.0 foundation build.
 
 ## [Unreleased]
 
+## [0.12.0] — 2026-09-11
+### Added
+- **First production deploy.** Migrations 0001–0006 applied to the real
+  `lucy` D1; `BETTER_AUTH_SECRET` set; deployed. Zero rows written —
+  schema-only, ready for real accounts.
+- **Custom domains** on the `1zero9.com` zone for both environments, with
+  the `*.workers.dev` URL kept alive alongside each:
+  `lucy.1zero9.com` (production), `lucy-dev.1zero9.com` (dev).
+- **ESLint** (flat config, `typescript-eslint` + the two stable
+  `eslint-plugin-react-hooks` rules — not the v7 "recommended" bundle,
+  which pulls in React Compiler diagnostics this project doesn't use).
+  `npm run lint` was broken since Phase 0; now passes clean.
+- **Email sending infrastructure** (`src/lib/email/`): a dependency-free
+  Resend client (plain `fetch`, no SDK) wired into Better Auth's email
+  verification hook. Safely no-ops without `RESEND_API_KEY` — sign-up is
+  unaffected either way. `requireEmailVerification` stays `false` until
+  the key is set and the flow is exercised end to end.
+### Fixed
+- `deploy:dev` was deploying to a stray `lucy-dev-dev` Worker instead of
+  `lucy-dev` (double env-suffix from `vinext-cloudflare deploy --env dev`).
+  Now builds with `CLOUDFLARE_ENV=dev` and deploys the resolved config
+  directly with plain `wrangler deploy`. Stray Worker deleted.
+- Client-side errors no longer leak raw browser text (e.g. "Failed to
+  fetch") — `src/lib/errors.ts`'s `friendlyError()` maps any network-level
+  failure to calm copy across every component that talks to the API, and
+  in the sign-in/sign-up form.
+
 ## [0.11.2] — 2026-09-11
 ### Fixed
 - `deploy:dev` was deploying to a stray `lucy-dev-dev` Worker instead of

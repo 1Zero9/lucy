@@ -100,7 +100,6 @@ export function AppShell({
     <div className="shell">
       <aside className="sidebar">
         <Link href="/" className="brand" aria-label="LUCY home">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/icons/lucy-app-icon-64.png" alt="" width={28} height={28} />
           <span>LUCY</span>
         </Link>

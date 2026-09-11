@@ -34,7 +34,6 @@ export default async function DrawingsPage() {
         <div className="module-grid">
           {drawings.map((d) => (
             <Link key={d.id} href={`/drawings/${d.id}`} className="module-card" style={{ textDecoration: "none", padding: 0, overflow: "hidden" }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={`/api/drawings/${d.id}/download`}
                 alt={d.title}

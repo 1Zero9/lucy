@@ -37,6 +37,14 @@
 		}
 	],
 
+	// Custom domain (Cloudflare-managed DNS + TLS) on the 1zero9.com zone.
+	// Adding a route disables the workers.dev URL by default; workers_dev:true
+	// keeps https://lucy.onezeronine.workers.dev reachable alongside it.
+	"routes": [
+		{ "pattern": "lucy.1zero9.com", "custom_domain": true }
+	],
+	"workers_dev": true,
+
 	// Remote development environment. Deploy with `npm run deploy:dev`
 	// (Worker name becomes `lucy-dev`). Wrangler does NOT inherit `assets` /
 	// `version_metadata` / `main` into named environments, so they are repeated
@@ -65,7 +73,11 @@
 					"binding": "FILES",
 					"bucket_name": "lucy-files-dev"
 				}
-			]
+			],
+			"routes": [
+				{ "pattern": "lucy-dev.1zero9.com", "custom_domain": true }
+			],
+			"workers_dev": true
 		}
 	}
 }

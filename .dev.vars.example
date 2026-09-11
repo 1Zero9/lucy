@@ -1,2 +1,6 @@
 BETTER_AUTH_SECRET=replace-with-a-32-byte-random-string
 BETTER_AUTH_URL=http://localhost:3001
+
+# Optional — without these, email sending safely no-ops (src/lib/email/resend.ts)
+RESEND_API_KEY=
+EMAIL_FROM=LUCY <noreply@1zero9.com>

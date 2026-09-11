@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { Module } from "@/lib/db/modules";
+import { friendlyError } from "@/lib/errors";
 
 type Props = {
   workspaceId: string;
@@ -43,7 +44,7 @@ export function ModulesManager({ workspaceId, initialModules }: Props) {
       setModules((m) => [...m, module]);
       setName("");
     } catch (err) {
-      setError((err as Error).message);
+      setError(friendlyError(err));
     } finally {
       setBusy(false);
     }
@@ -61,7 +62,7 @@ export function ModulesManager({ workspaceId, initialModules }: Props) {
       setModules((m) => m.map((x) => (x.id === id ? module : x)));
       setEditing(null);
     } catch (err) {
-      setError((err as Error).message);
+      setError(friendlyError(err));
     }
   }
 
@@ -72,7 +73,7 @@ export function ModulesManager({ workspaceId, initialModules }: Props) {
       setModules((m) => m.filter((x) => x.id !== mod.id));
       setDeleted((d) => [{ id: mod.id, name: mod.name }, ...d]);
     } catch (err) {
-      setError((err as Error).message);
+      setError(friendlyError(err));
     }
   }
 
@@ -86,7 +87,7 @@ export function ModulesManager({ workspaceId, initialModules }: Props) {
       setModules(fresh);
       setDeleted((d) => d.filter((x) => x.id !== id));
     } catch (err) {
-      setError((err as Error).message);
+      setError(friendlyError(err));
     }
   }
 

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { ResearchItem } from "@/lib/db/research";
 import { Markdown } from "@/components/markdown";
+import { friendlyError } from "@/lib/errors";
 
 async function jsonOrThrow(res: Response) {
   const body: unknown = await res.json().catch(() => ({}));
@@ -25,10 +26,6 @@ export function ResearchManager({
   const [annotation, setAnnotation] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  function guard<T>(p: Promise<T>) {
-    p.catch((e) => setError((e as Error).message));
-  }
-
   async function add(e: React.FormEvent) {
     e.preventDefault();
     if (!title.trim()) return;
@@ -45,7 +42,7 @@ export function ResearchManager({
       setTitle("");
       setUrl("");
     } catch (e2) {
-      setError((e2 as Error).message);
+      setError(friendlyError(e2));
     }
   }
 
@@ -62,7 +59,7 @@ export function ResearchManager({
       setItems((x) => x.map((i) => (i.id === id ? item : i)));
       setEditing(null);
     } catch (e2) {
-      setError((e2 as Error).message);
+      setError(friendlyError(e2));
     }
   }
 
@@ -73,7 +70,7 @@ export function ResearchManager({
       setItems((x) => x.filter((i) => i.id !== it.id));
       setDeleted((d) => [it, ...d]);
     } catch (e2) {
-      setError((e2 as Error).message);
+      setError(friendlyError(e2));
     }
   }
 
@@ -84,7 +81,7 @@ export function ResearchManager({
       setItems((x) => [it, ...x]);
       setDeleted((d) => d.filter((i) => i.id !== it.id));
     } catch (e2) {
-      setError((e2 as Error).message);
+      setError(friendlyError(e2));
     }
   }
 

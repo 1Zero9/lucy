@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import type { Flashcard } from "@/lib/db/flashcards";
 import type { Grade } from "@/lib/srs";
+import { friendlyError } from "@/lib/errors";
 
 const GRADES: { grade: Grade; label: string }[] = [
   { grade: "again", label: "Again" },
@@ -41,7 +42,7 @@ export function RevisionSession({ initialQueue }: { initialQueue: Flashcard[] })
       setQueue((q) => (g === "again" ? [...q, updated] : q));
       setI((n) => n + 1);
     } catch (e) {
-      setError((e as Error).message);
+      setError(friendlyError(e));
     } finally {
       setBusy(false);
     }

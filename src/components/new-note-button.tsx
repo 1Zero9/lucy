@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Note } from "@/lib/db/notes";
+import { friendlyError } from "@/lib/errors";
 
 export function NewNoteButton({
   workspaceId,
@@ -31,7 +32,7 @@ export function NewNoteButton({
       const { note } = body as { note: Note };
       router.push(`/notes/${note.id}`);
     } catch (e) {
-      setError((e as Error).message);
+      setError(friendlyError(e));
       setBusy(false);
     }
   }

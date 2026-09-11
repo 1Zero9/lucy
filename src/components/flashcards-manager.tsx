@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { Flashcard } from "@/lib/db/flashcards";
 import type { Module } from "@/lib/db/modules";
+import { friendlyError } from "@/lib/errors";
 
 async function jsonOrThrow(res: Response) {
   const body: unknown = await res.json().catch(() => ({}));
@@ -48,7 +49,7 @@ export function FlashcardsManager({
       setFront("");
       setBack("");
     } catch (e2) {
-      setError((e2 as Error).message);
+      setError(friendlyError(e2));
     }
   }
 
@@ -66,7 +67,7 @@ export function FlashcardsManager({
       setCards((c) => c.map((x) => (x.id === id ? card : x)));
       setEditing(null);
     } catch (e2) {
-      setError((e2 as Error).message);
+      setError(friendlyError(e2));
     }
   }
 
@@ -77,7 +78,7 @@ export function FlashcardsManager({
       setCards((c) => c.filter((x) => x.id !== card.id));
       setDeleted((d) => [card, ...d]);
     } catch (e2) {
-      setError((e2 as Error).message);
+      setError(friendlyError(e2));
     }
   }
 
@@ -88,7 +89,7 @@ export function FlashcardsManager({
       setCards((c) => [...c, card]);
       setDeleted((d) => d.filter((x) => x.id !== card.id));
     } catch (e2) {
-      setError((e2 as Error).message);
+      setError(friendlyError(e2));
     }
   }
 

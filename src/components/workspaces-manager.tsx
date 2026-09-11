@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { switchWorkspaceAction } from "@/app/actions";
 import type { Workspace } from "@/lib/db/workspaces";
+import { friendlyError } from "@/lib/errors";
 
 async function api<T = unknown>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(path, {
@@ -41,7 +42,7 @@ export function WorkspacesManager({
       setWorkspaces((w) => w.map((x) => (x.id === id ? workspace : x)));
       setEditing(null);
     } catch (err) {
-      setError((err as Error).message);
+      setError(friendlyError(err));
     }
   }
 
@@ -52,7 +53,7 @@ export function WorkspacesManager({
       setWorkspaces((w) => w.filter((x) => x.id !== ws.id));
       setDeleted((d) => [{ id: ws.id, name: ws.name }, ...d]);
     } catch (err) {
-      setError((err as Error).message);
+      setError(friendlyError(err));
     }
   }
 
@@ -64,7 +65,7 @@ export function WorkspacesManager({
       setWorkspaces(fresh);
       setDeleted((d) => d.filter((x) => x.id !== id));
     } catch (err) {
-      setError((err as Error).message);
+      setError(friendlyError(err));
     }
   }
 

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { friendlyError } from "@/lib/errors";
 
 export function NewDrawingButton({ workspaceId }: { workspaceId: string }) {
   const router = useRouter();
@@ -30,7 +31,7 @@ export function NewDrawingButton({ workspaceId }: { workspaceId: string }) {
       if (!res.ok) throw new Error((body as { error?: string })?.error ?? "Could not create drawing.");
       router.push(`/drawings/${(body as { drawing: { id: string } }).drawing.id}`);
     } catch (e) {
-      setError((e as Error).message);
+      setError(friendlyError(e));
       setBusy(false);
     }
   }

@@ -141,7 +141,6 @@ export async function flush(): Promise<void> {
   let error: string | null = null;
 
   try {
-    // eslint-disable-next-line no-constant-condition
     while (true) {
       const queue = await readQueue();
       const item = queue[0] as QueuedMutation | undefined;

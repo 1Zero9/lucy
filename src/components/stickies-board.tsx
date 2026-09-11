@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { Sticky } from "@/lib/db/stickies";
+import { friendlyError } from "@/lib/errors";
 
 const PALETTE = ["#FEF9C3", "#DCFCE7", "#DBEAFE", "#FEE2E2", "#F3E8FF", "#FFEDD5"];
 
@@ -39,7 +40,7 @@ export function StickiesBoard({
       setStickies((s) => [sticky, ...s]);
       setDraft("");
     } catch (e2) {
-      setError((e2 as Error).message);
+      setError(friendlyError(e2));
     }
   }
 
@@ -55,7 +56,7 @@ export function StickiesBoard({
       )) as { sticky: Sticky };
       setStickies((s) => s.map((x) => (x.id === id ? sticky : x)));
     } catch (e2) {
-      setError((e2 as Error).message);
+      setError(friendlyError(e2));
     }
   }
 
@@ -66,7 +67,7 @@ export function StickiesBoard({
       setStickies((s) => s.filter((x) => x.id !== st.id));
       setDeleted((d) => [st, ...d]);
     } catch (e2) {
-      setError((e2 as Error).message);
+      setError(friendlyError(e2));
     }
   }
 
@@ -77,7 +78,7 @@ export function StickiesBoard({
       setStickies((s) => [st, ...s]);
       setDeleted((d) => d.filter((x) => x.id !== st.id));
     } catch (e2) {
-      setError((e2 as Error).message);
+      setError(friendlyError(e2));
     }
   }
 

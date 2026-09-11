@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import type { Task } from "@/lib/db/tasks";
 import { dueBucket, DUE_BUCKET_LABELS, DUE_BUCKET_ORDER, type DueBucket } from "@/lib/due";
+import { friendlyError } from "@/lib/errors";
 
 async function jsonOrThrow(res: Response) {
   const body: unknown = await res.json().catch(() => ({}));
@@ -54,7 +55,7 @@ export function TasksView({
     setTasks((ts) => ts.map((t) => (t.id === next.id ? next : t)));
   }
   function guard<T>(p: Promise<T>) {
-    p.catch((e) => setError((e as Error).message));
+    p.catch((e) => setError(friendlyError(e)));
   }
 
   async function add(e: React.FormEvent) {
@@ -73,7 +74,7 @@ export function TasksView({
       setTitle("");
       setDue("");
     } catch (e2) {
-      setError((e2 as Error).message);
+      setError(friendlyError(e2));
     }
   }
 
@@ -96,7 +97,7 @@ export function TasksView({
       setTasks((ts) => ts.filter((x) => x.id !== t.id));
       setDeleted((d) => [t, ...d]);
     } catch (e2) {
-      setError((e2 as Error).message);
+      setError(friendlyError(e2));
     }
   }
   async function undo(t: Task) {
@@ -106,7 +107,7 @@ export function TasksView({
       setTasks((ts) => [...ts, t]);
       setDeleted((d) => d.filter((x) => x.id !== t.id));
     } catch (e2) {
-      setError((e2 as Error).message);
+      setError(friendlyError(e2));
     }
   }
 

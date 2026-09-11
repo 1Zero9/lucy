@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Folder } from "@/lib/db/folders";
 import type { Tag } from "@/lib/db/tags";
+import { friendlyError } from "@/lib/errors";
 
 async function send(path: string, method: string, body?: unknown) {
   const res = await fetch(path, {
@@ -47,7 +48,7 @@ export function NotesFilter({
   }
 
   function guard(p: Promise<unknown>) {
-    p.then(() => router.refresh()).catch((e) => setError((e as Error).message));
+    p.then(() => router.refresh()).catch((e) => setError(friendlyError(e)));
   }
 
   const chip = (label: string, value: string | null, active: boolean) => (

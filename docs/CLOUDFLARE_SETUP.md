@@ -110,7 +110,28 @@ authenticate:
 
 ```bash
 npx wrangler secret put BETTER_AUTH_SECRET --env dev     # lucy-dev  (done)
-npx wrangler secret put BETTER_AUTH_SECRET               # production lucy
+npx wrangler secret put BETTER_AUTH_SECRET               # production lucy (done)
 ```
 
-Local development reads it from `.dev.vars` instead.
+`RESEND_API_KEY` (and optionally `EMAIL_FROM`) enable outbound email
+(src/lib/email/resend.ts) — without it, sending safely no-ops. Not yet set on
+either deployed environment:
+
+```bash
+npx wrangler secret put RESEND_API_KEY --env dev
+npx wrangler secret put RESEND_API_KEY
+```
+
+Local development reads all of these from `.dev.vars` instead (see
+`.dev.vars.example`).
+
+## Custom domains
+
+Both environments are on the `1zero9.com` zone (Cloudflare-managed DNS +
+TLS, via `routes` + `custom_domain: true` in `wrangler.jsonc`), with the
+`*.workers.dev` URL kept alive alongside each (`workers_dev: true`):
+
+| Environment | Custom domain | workers.dev |
+|---|---|---|
+| dev | https://lucy-dev.1zero9.com | https://lucy-dev.onezeronine.workers.dev |
+| production | https://lucy.1zero9.com | https://lucy.onezeronine.workers.dev |

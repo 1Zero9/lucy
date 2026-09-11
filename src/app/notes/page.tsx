@@ -13,7 +13,7 @@ import { NotesFilter } from "@/components/notes-filter";
 export const metadata = { title: "Notes · LUCY" };
 
 function snippet(text: string): string {
-  const clean = text.replace(/[#*_`>\-]/g, "").replace(/\s+/g, " ").trim();
+  const clean = text.replace(/[#*_`>-]/g, "").replace(/\s+/g, " ").trim();
   return clean.length > 140 ? `${clean.slice(0, 140)}…` : clean;
 }
 

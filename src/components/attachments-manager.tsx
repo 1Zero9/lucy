@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import type { Attachment } from "@/lib/db/attachments";
+import { friendlyError } from "@/lib/errors";
 
 function humanSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -52,7 +53,7 @@ export function AttachmentsManager({
         setItems((x) => [attachment, ...x]);
       }
     } catch (e) {
-      setError((e as Error).message);
+      setError(friendlyError(e));
     } finally {
       setBusy(false);
       if (fileRef.current) fileRef.current.value = "";
@@ -66,7 +67,7 @@ export function AttachmentsManager({
       setItems((x) => x.filter((a) => a.id !== att.id));
       setDeleted((d) => [att, ...d]);
     } catch (e) {
-      setError((e as Error).message);
+      setError(friendlyError(e));
     }
   }
 
@@ -79,7 +80,7 @@ export function AttachmentsManager({
       setItems((x) => [att, ...x]);
       setDeleted((d) => d.filter((a) => a.id !== att.id));
     } catch (e) {
-      setError((e as Error).message);
+      setError(friendlyError(e));
     }
   }
 

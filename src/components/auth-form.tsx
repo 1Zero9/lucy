@@ -11,6 +11,9 @@ function messageFor(mode: Mode, code: string | undefined, fallback: string): str
   if (code === "INVALID_EMAIL_OR_PASSWORD") return "That email and password do not match.";
   if (code === "USER_ALREADY_EXISTS") return "An account with that email already exists.";
   if (code === "PASSWORD_TOO_SHORT") return "Password must be at least 10 characters.";
+  // No code at all means the request never reached the server — a raw network
+  // failure, not a validation error. Don't surface the browser's own message.
+  if (!code) return "Couldn't reach LUCY. Check your connection and try again.";
   return fallback || (mode === "login" ? "Could not sign in." : "Could not create your account.");
 }
 

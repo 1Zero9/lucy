@@ -1,4 +1,4 @@
-import { newId, nowIso } from "./index";
+import { nowIso } from "./index";
 
 export type Drawing = {
   id: string;

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { Folder } from "@/lib/db/folders";
 import type { Tag } from "@/lib/db/tags";
+import { friendlyError } from "@/lib/errors";
 
 const PALETTE = ["#EDE9FE", "#DBEAFE", "#DCFCE7", "#FEF9C3", "#FEE2E2", "#F3E8FF"];
 
@@ -44,7 +45,7 @@ export function NoteMetaBar({
   const [error, setError] = useState<string | null>(null);
 
   function guard(p: Promise<unknown>) {
-    p.catch((e) => setError((e as Error).message));
+    p.catch((e) => setError(friendlyError(e)));
   }
 
   function patch(fields: Record<string, unknown>) {

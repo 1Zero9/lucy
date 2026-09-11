@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { Note } from "@/lib/db/notes";
+import { friendlyError } from "@/lib/errors";
 
 async function post(path: string) {
   const res = await fetch(path, { method: "POST", headers: { "content-type": "application/json" } });
@@ -19,7 +20,7 @@ export function TrashList({ initialNotes }: { initialNotes: Note[] }) {
       await post(`/api/notes/${id}/restore`);
       setNotes((n) => n.filter((x) => x.id !== id));
     } catch (e) {
-      setError((e as Error).message);
+      setError(friendlyError(e));
     }
   }
 
@@ -30,7 +31,7 @@ export function TrashList({ initialNotes }: { initialNotes: Note[] }) {
       await post(`/api/notes/${id}/purge`);
       setNotes((n) => n.filter((x) => x.id !== id));
     } catch (e) {
-      setError((e as Error).message);
+      setError(friendlyError(e));
     }
   }
 
