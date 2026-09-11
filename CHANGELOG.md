@@ -7,6 +7,20 @@ for a pre-1.0 foundation build.
 
 ## [Unreleased]
 
+## [0.11.2] — 2026-09-11
+### Fixed
+- `deploy:dev` was deploying to a stray `lucy-dev-dev` Worker instead of
+  `lucy-dev`: `vinext-cloudflare deploy --env dev` both bakes the env suffix
+  into the built config's Worker name *and* forwards `--env dev` to the
+  final `wrangler deploy`, double-applying it. `deploy:dev` now builds with
+  `CLOUDFLARE_ENV=dev` and deploys the resolved config directly with plain
+  `wrangler deploy` (no `--env`). Verified live: `lucy-dev` deployed to
+  `https://lucy-dev.<subdomain>.workers.dev`, signed up, created a workspace,
+  confirmed the row landed in remote `lucy-dev` D1 and production `lucy`
+  D1 stayed empty. The stray `lucy-dev-dev` Worker was deleted.
+- First real deploy: this is LUCY's first environment reachable outside a
+  local machine (dev only — no production deploy).
+
 ## [0.11.1] — 2026-09-11
 ### Fixed
 - Service worker no longer registers in `npm run dev` (only in production) —

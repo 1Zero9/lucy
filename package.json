@@ -1,6 +1,6 @@
 {
   "name": "lucy",
-  "version": "0.11.1",
+  "version": "0.11.2",
   "private": true,
   "scripts": {
     "dev": "vinext dev --port 3001",
@@ -21,7 +21,7 @@
     "build:vinext": "vinext build",
     "start:vinext": "wrangler dev --config dist/server/wrangler.json",
     "deploy:vinext": "vinext-cloudflare deploy --config dist/server/wrangler.json",
-    "deploy:dev": "vinext-cloudflare deploy --env dev --config dist/server/wrangler.json"
+    "deploy:dev": "CLOUDFLARE_ENV=dev vinext build && wrangler deploy --config dist/server/wrangler.json"
   },
   "dependencies": {
     "@vinext/cloudflare": "^1.0.0-beta.7",

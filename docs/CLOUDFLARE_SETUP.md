@@ -91,9 +91,17 @@ Production (Worker `lucy`, bindings `lucy` / `lucy-files`) — never the default
 npm run deploy:vinext
 ```
 
-Both read `wrangler.jsonc`; `deploy:dev` selects the `env.dev` block, which
-repeats `main` / `assets` / `cache` / `version_metadata` from the top level
-because Wrangler does not inherit those into named environments.
+Both read `wrangler.jsonc`. `deploy:dev` builds with `CLOUDFLARE_ENV=dev`
+(which resolves the `env.dev` block — repeated `main` / `assets` / `cache` /
+`version_metadata` from the top level, since Wrangler does not inherit those
+into named environments) into a fully-resolved `dist/server/wrangler.json`,
+then deploys that file directly with plain `wrangler deploy` — **without**
+`--env dev`. The build already named the Worker `lucy-dev`; also passing
+`--env dev` to the final `wrangler deploy` call double-applies the suffix
+and deploys to a stray `lucy-dev-dev` Worker instead (hit once, fixed —
+`workers_dev` requires an account subdomain, which is registered now).
+`deploy:vinext` (production) needs no such care since it never passes
+`--env` at all.
 
 ### Secrets
 
