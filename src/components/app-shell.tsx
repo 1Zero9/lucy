@@ -13,6 +13,7 @@ import {
   TasksIcon
 } from "@/components/icons";
 import { MobileNav } from "@/components/mobile-nav";
+import pkg from "../../package.json";
 
 export type Section =
   | "home"
@@ -106,6 +107,7 @@ export function AppShell({
         <NavGroup items={PRIMARY} active={active} />
         <NavGroup label="Study" items={SECONDARY} active={active} />
         <NavGroup label="Account" items={UTILITY} active={active} />
+        <span className="sidebar-version">v{pkg.version}</span>
       </aside>
       <main className="main">{children}</main>
       <MobileNav active={active} workspaceId={workspaceId} />
