@@ -185,6 +185,26 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .card h2 { font-size: 16px; margin-top: 0; font-family: var(--font-display); }
 .card p { color: var(--muted); }
 
+/* --- dev-environment indicator (src/lib/env.ts) --- */
+
+.dev-banner {
+  background: var(--warning);
+  color: #78350F;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 6px 12px;
+}
+
+/* Sign-in/sign-up only — reuses the same --primary token the rest of the app
+   reads from, so every button/focus-ring on these screens re-tints without
+   touching the app's own purple once you're signed in. */
+html[data-env="dev"] .auth {
+  --primary: var(--warning);
+  --primary-strong: #B45309;
+}
+
 /* --- auth screens & app shell chrome (Phase 1A) --- */
 
 .auth {

@@ -1,6 +1,6 @@
 {
   "name": "lucy",
-  "version": "0.12.0",
+  "version": "0.12.1",
   "private": true,
   "scripts": {
     "dev": "vinext dev --port 3001",

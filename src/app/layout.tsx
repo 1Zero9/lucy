@@ -1,5 +1,6 @@
 import "./globals.css";
 import { OfflineBar } from "@/components/offline-bar";
+import { isProductionEnv } from "@/lib/env";
 
 export const metadata = {
   title: "LUCY",
@@ -19,8 +20,10 @@ export const viewport = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const dev = !isProductionEnv();
+
   return (
-    <html lang="en">
+    <html lang="en" data-env={dev ? "dev" : "production"}>
       <head>
         {/* docs/LUCY_STYLE_GUIDE.md §3 — Inter (UI) + Plus Jakarta Sans (display) */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -31,6 +34,11 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         />
       </head>
       <body>
+        {dev ? (
+          <div className="dev-banner" role="status">
+            DEV — test data, not production
+          </div>
+        ) : null}
         {children}
         <OfflineBar />
       </body>

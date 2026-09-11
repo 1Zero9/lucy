@@ -14,6 +14,10 @@
 	"cache": { "enabled": true },
 	"version_metadata": { "binding": "CF_VERSION_METADATA" },
 
+	// Plain (non-secret) config read by src/lib/env.ts to show/hide the dev
+	// banner. "production" here, "dev" in env.dev below and in .dev.vars.
+	"vars": { "APP_ENV": "production" },
+
 	// Bindings (see docs/ARCHITECTURE.md):
 	//   DB    -> Cloudflare D1  (structured data)
 	//   FILES -> Cloudflare R2  (private file objects)
@@ -60,6 +64,7 @@
 			},
 			"cache": { "enabled": true },
 			"version_metadata": { "binding": "CF_VERSION_METADATA" },
+			"vars": { "APP_ENV": "dev" },
 			"d1_databases": [
 				{
 					"binding": "DB",

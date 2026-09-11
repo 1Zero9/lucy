@@ -7,6 +7,16 @@ for a pre-1.0 foundation build.
 
 ## [Unreleased]
 
+## [0.12.1] — 2026-09-11
+### Added
+- Dev-environment indicator so dev and production are never visually
+  confused: a slim amber "DEV — test data, not production" banner on every
+  page, and the sign-in/sign-up screens re-tint from purple to amber, both
+  driven by a new plain (non-secret) `APP_ENV` var (`src/lib/env.ts`,
+  `production` in wrangler.jsonc top level, `dev` in `env.dev` and
+  `.dev.vars`). Production is unaffected — verified the banner is absent
+  there.
+
 ## [0.12.0] — 2026-09-11
 ### Added
 - **First production deploy.** Migrations 0001–0006 applied to the real
