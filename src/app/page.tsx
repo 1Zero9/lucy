@@ -14,7 +14,8 @@ import { AppShell } from "@/components/app-shell";
 import { WorkspaceSwitcher } from "@/components/workspace-switcher";
 import { NewNoteButton } from "@/components/new-note-button";
 import { EmptyState } from "@/components/empty-state";
-import { FilesIcon, ModulesIcon, NotesIcon, StickyIcon, TasksIcon } from "@/components/icons";
+import { NotesIcon, TasksIcon } from "@/components/icons";
+import { SearchShortcut } from "@/components/search-shortcut";
 
 // Strip raw Markdown markers so the Home preview reads as text, not source
 // (UPGRADE.md §5: "Home currently exposes Markdown markers such as ## and **").
@@ -42,130 +43,141 @@ export default async function Page() {
     listAttachments(db, user.id, active.id)
   ]);
 
-  const [featuredNote, ...restNotes] = notes;
-  const continueNotes = restNotes.slice(0, 3);
-
   const dueNow = openTasks.filter((t) => ["overdue", "today"].includes(dueBucket(t.due_at)));
   const upcoming = openTasks
     .filter((t) => t.due_at && ["soon", "later"].includes(dueBucket(t.due_at)))
     .sort((a, b) => (a.due_at as string).localeCompare(b.due_at as string));
   const nextDeadline = upcoming[0] ?? null;
+  const moduleById = new Map(modules.map((module) => [module.id, module]));
+  const recentNotes = notes.slice(0, 6);
 
   return (
     <AppShell active="home" workspaceId={active.id}>
-      <div className="topbar">
+      <SearchShortcut />
+      <header className="home-header">
         <div>
-          <h1 className="page-title">{active.name}</h1>
-          <WorkspaceSwitcher workspaces={all} activeId={active.id} />
+          <span className="home-eyebrow">Workspace</span>
+          <h1 className="home-title">{active.name}</h1>
+          {active.purpose ? <p className="home-subtitle">{active.purpose}</p> : null}
         </div>
-        <NewNoteButton workspaceId={active.id} />
-      </div>
+        <div className="home-header-actions">
+          <WorkspaceSwitcher workspaces={all} activeId={active.id} />
+          <NewNoteButton workspaceId={active.id} />
+        </div>
+      </header>
 
-      <form action="/search">
+      <form action="/search" className="home-search">
         <input
           className="search"
           name="q"
           aria-label="Search"
-          placeholder="Search anything in this workspace…"
+          placeholder="Search notes, tasks and files…"
         />
+        <span className="search-kbd" aria-hidden="true">
+          ⌘K
+        </span>
       </form>
 
-      <div className="section-head">
-        <h2>
-          <NotesIcon size={16} /> Continue
-        </h2>
-        <Link className="linkish" href="/notes">
-          View all
-        </Link>
-      </div>
-      {!featuredNote ? (
-        <EmptyState
-          title="No notes yet"
-          body="Start writing — LUCY saves as you go."
-          action={<NewNoteButton workspaceId={active.id} label="New note" />}
-        />
-      ) : (
-        <>
-          <Link href={`/notes/${featuredNote.id}`} className="continue-featured">
-            <span className="note-list-title">{featuredNote.title}</span>
-            {featuredNote.content_text ? (
-              <span className="note-list-snippet muted">{snippet(featuredNote.content_text)}</span>
-            ) : null}
-            <span className="muted note-list-meta">
-              Updated {relativeDate(featuredNote.updated_at)}
-            </span>
-          </Link>
-          {continueNotes.length > 0 ? (
-            <ul className="note-list continue-compact">
-              {continueNotes.map((n) => (
-                <li key={n.id}>
-                  <Link href={`/notes/${n.id}`}>
-                    <span className="note-list-title">{n.title}</span>
-                    <span className="muted note-list-meta">
-                      Updated {relativeDate(n.updated_at)}
+      <div className="home-layout">
+        <section className="home-primary" aria-labelledby="continue-heading">
+          <div className="section-head">
+            <h2 id="continue-heading">
+              <NotesIcon size={18} /> Continue where you left off
+            </h2>
+            <Link className="linkish" href="/notes">
+              All notes
+            </Link>
+          </div>
+          {recentNotes.length === 0 ? (
+            <EmptyState
+              title="No notes yet"
+              body="Start writing — LUCY saves as you go."
+              action={<NewNoteButton workspaceId={active.id} label="Create your first note" />}
+            />
+          ) : (
+            <div className="continue-grid">
+              {recentNotes.map((note) => {
+                const module = note.module_id ? moduleById.get(note.module_id) : undefined;
+                return (
+                  <Link href={`/notes/${note.id}`} className="note-tile" key={note.id}>
+                    <div className="note-tile-top">
+                      {module ? (
+                        <span
+                          className="note-module"
+                          style={{ "--module-colour": module.colour } as React.CSSProperties}
+                        >
+                          {module.name}
+                        </span>
+                      ) : (
+                        <span className="note-module is-unfiled">Unfiled</span>
+                      )}
+                      {note.is_pinned === 1 ? <span className="note-pinned">Pinned</span> : null}
+                    </div>
+                    <span className="note-tile-title">{note.title}</span>
+                    <span className="note-tile-preview">
+                      {snippet(note.content_text) || "Open this note to start writing."}
                     </span>
+                    <span className="note-tile-time">Edited {relativeDate(note.updated_at)}</span>
                   </Link>
-                </li>
-              ))}
-            </ul>
-          ) : null}
-        </>
-      )}
-
-      <div className="section-head" style={{ marginTop: 28 }}>
-        <h2>
-          <TasksIcon size={16} /> Today
-        </h2>
-        <Link className="linkish" href="/tasks">
-          View all
-        </Link>
-      </div>
-      <div className="today-card">
-        <div className="today-tasks">
-          {dueNow.length === 0 ? (
-            <div className="empty">Nothing due.</div>
-          ) : (
-            <ul className="mini-list">
-              {dueNow.map((t) => (
-                <li key={t.id} className={dueBucket(t.due_at) === "overdue" ? "overdue" : undefined}>
-                  {t.title}
-                </li>
-              ))}
-            </ul>
+                );
+              })}
+            </div>
           )}
-        </div>
-        <div className="today-next">
-          {nextDeadline ? (
-            <>
-              <span className="k">Next deadline</span>
-              <span>{nextDeadline.title}</span>
-              <span className="muted">{relativeDate(nextDeadline.due_at as string)}</span>
-            </>
-          ) : (
-            <span className="muted">Nothing else on the horizon.</span>
-          )}
-        </div>
-      </div>
+        </section>
 
-      <div className="section-head" style={{ marginTop: 28 }}>
-        <h2>Workspace</h2>
-      </div>
-      <div className="workspace-links">
-        <Link href="/stickies" className="workspace-link">
-          <StickyIcon size={20} />
-          <span>Stickies</span>
-          <span className="count">{stickies.length}</span>
-        </Link>
-        <Link href="/files" className="workspace-link">
-          <FilesIcon size={20} />
-          <span>Files</span>
-          <span className="count">{files.length}</span>
-        </Link>
-        <Link href="/modules" className="workspace-link">
-          <ModulesIcon size={20} />
-          <span>Modules</span>
-          <span className="count">{modules.length}</span>
-        </Link>
+        <aside className="home-sidebar" aria-label="Workspace overview">
+          <section className="home-panel">
+            <div className="section-head">
+              <h2>
+                <TasksIcon size={18} /> Today
+              </h2>
+              <Link className="linkish" href="/tasks">
+                Tasks
+              </Link>
+            </div>
+            {dueNow.length === 0 ? (
+              <p className="home-panel-empty">Nothing due today.</p>
+            ) : (
+              <ul className="home-task-list">
+                {dueNow.slice(0, 4).map((task) => (
+                  <li key={task.id} className={dueBucket(task.due_at) === "overdue" ? "is-overdue" : undefined}>
+                    {task.title}
+                  </li>
+                ))}
+              </ul>
+            )}
+            {nextDeadline ? (
+              <div className="next-deadline">
+                <span>Next up</span>
+                <strong>{nextDeadline.title}</strong>
+                <small>{relativeDate(nextDeadline.due_at as string)}</small>
+              </div>
+            ) : null}
+          </section>
+
+          <section className="home-panel workspace-panel">
+            <div className="section-head">
+              <h2>Workspace</h2>
+              <Link className="linkish" href="/modules">
+                Manage
+              </Link>
+            </div>
+            <div className="workspace-stats">
+              <Link href="/modules">
+                <strong>{modules.length}</strong>
+                <span>Subjects</span>
+              </Link>
+              <Link href="/files">
+                <strong>{files.length}</strong>
+                <span>Files</span>
+              </Link>
+              <Link href="/stickies">
+                <strong>{stickies.length}</strong>
+                <span>Stickies</span>
+              </Link>
+            </div>
+          </section>
+        </aside>
       </div>
     </AppShell>
   );

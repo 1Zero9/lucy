@@ -17,7 +17,7 @@ export type Module = {
 const COLUMNS =
   "id, workspace_id, period_id, name, code, description, colour, icon, sort_order, created_at, updated_at";
 
-export const DEFAULT_MODULE_COLOUR = "#EDE9FE";
+export const DEFAULT_MODULE_COLOUR = "#A78BFA";
 
 /** Live modules in a workspace the user owns. */
 export async function listModules(

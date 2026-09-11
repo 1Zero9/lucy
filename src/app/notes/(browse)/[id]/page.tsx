@@ -8,7 +8,6 @@ import { listFolders } from "@/lib/db/folders";
 import { listTags, tagsForNote } from "@/lib/db/tags";
 import { listAttachments } from "@/lib/db/attachments";
 import { listFlashcards } from "@/lib/db/flashcards";
-import { AppShell } from "@/components/app-shell";
 import { NoteEditor } from "@/components/note-editor";
 import { NoteMetaBar } from "@/components/note-meta-bar";
 import { AttachmentsManager } from "@/components/attachments-manager";
@@ -16,6 +15,8 @@ import { FlashcardsIcon } from "@/components/icons";
 
 export const metadata = { title: "Note · LUCY" };
 
+// No AppShell here — the (browse) layout already provides it, plus the
+// persistent subject-tabs/note-list pane this renders alongside.
 export default async function NotePage({ params }: { params: Promise<{ id: string }> }) {
   const user = await requireUser();
   const { id } = await params;
@@ -37,8 +38,10 @@ export default async function NotePage({ params }: { params: Promise<{ id: strin
     ]);
 
   return (
-    <AppShell active="notes" workspaceId={note.workspace_id}>
-      <p style={{ marginTop: 0 }}>
+    <>
+      {/* Only meaningful on a narrow viewport, where the list pane is
+          hidden while a note is open (see .has-detail in globals.css). */}
+      <p className="notes-back-link">
         <Link className="linkish" href="/notes">
           ← All notes
         </Link>
@@ -82,6 +85,6 @@ export default async function NotePage({ params }: { params: Promise<{ id: strin
           </ul>
         </section>
       ) : null}
-    </AppShell>
+    </>
   );
 }

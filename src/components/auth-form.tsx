@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signIn, signUp } from "@/lib/auth/client";
@@ -19,16 +19,54 @@ function messageFor(mode: Mode, code: string | undefined, fallback: string): str
   return fallback || (mode === "login" ? "Could not sign in." : "Could not create your account.");
 }
 
+function EnvelopeIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <path d="m4 7 8 6 8-6" />
+    </svg>
+  );
+}
+
+function LockIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="4" y="11" width="16" height="10" rx="2" />
+      <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+    </svg>
+  );
+}
+
+function EyeIcon({ off }: { off: boolean }) {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z" />
+      <circle cx="12" cy="12" r="3" />
+      {off ? <line x1="2" y1="2" x2="22" y2="22" /> : null}
+    </svg>
+  );
+}
+
 export function AuthForm({ mode }: { mode: Mode }) {
   const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [awaitingVerification, setAwaitingVerification] = useState(false);
+  const emailRef = useRef<HTMLInputElement>(null);
 
   const isSignup = mode === "signup";
+
+  // Autofocus is a real time-saver on desktop (mouse-driven), but jarring on
+  // phones — it pops the keyboard and steals scroll position before the
+  // person has even seen the screen. `(pointer: fine)` is a reliable,
+  // JS-free-feeling way to tell "probably a desktop with a mouse" apart.
+  useEffect(() => {
+    if (window.matchMedia("(pointer: fine)").matches) emailRef.current?.focus();
+  }, []);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -94,6 +132,10 @@ export function AuthForm({ mode }: { mode: Mode }) {
         {isSignup ? "Your private learning workspace." : "Welcome back."}
       </p>
 
+      <p className="auth-trust">
+        <span aria-hidden="true">✦</span> Fast, private learning workspace — offline-ready.
+      </p>
+
       {error ? (
         <p className="form-error" role="alert">
           {error}
@@ -116,15 +158,21 @@ export function AuthForm({ mode }: { mode: Mode }) {
 
       <div className="field">
         <label htmlFor="email">Email</label>
-        <input
-          id="email"
-          name="email"
-          type="email"
-          autoComplete="email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
+        <div className="field-icon-wrap">
+          <span className="field-icon">
+            <EnvelopeIcon />
+          </span>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            required
+            ref={emailRef}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </div>
       </div>
 
       <div className="field">
@@ -136,16 +184,30 @@ export function AuthForm({ mode }: { mode: Mode }) {
             </Link>
           ) : null}
         </div>
-        <input
-          id="password"
-          name="password"
-          type="password"
-          autoComplete={isSignup ? "new-password" : "current-password"}
-          required
-          minLength={10}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+        <div className="field-icon-wrap">
+          <span className="field-icon">
+            <LockIcon />
+          </span>
+          <input
+            id="password"
+            name="password"
+            type={showPassword ? "text" : "password"}
+            autoComplete={isSignup ? "new-password" : "current-password"}
+            required
+            minLength={10}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <button
+            type="button"
+            className="field-toggle"
+            aria-label={showPassword ? "Hide password" : "Show password"}
+            aria-pressed={showPassword}
+            onClick={() => setShowPassword((v) => !v)}
+          >
+            <EyeIcon off={showPassword} />
+          </button>
+        </div>
       </div>
 
       <button className="btn" type="submit" disabled={busy}>
@@ -156,6 +218,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
           : isSignup
             ? "Create account"
             : "Sign in"}
+        {!busy ? <span className="enter-hint" aria-hidden="true">↵</span> : null}
       </button>
 
       <p className="auth-alt">

@@ -99,7 +99,7 @@ export function WorkspacesManager({
       ) : (
         <div className="module-grid">
           {workspaces.map((ws) => (
-            <article className="module-card" key={ws.id} style={{ borderLeftColor: ws.colour ?? "#7C3AED" }}>
+            <article className="module-card" key={ws.id}>
               {editing === ws.id ? (
                 <form
                   className="inline-form"
@@ -123,6 +123,12 @@ export function WorkspacesManager({
                 </form>
               ) : (
                 <>
+                  <span
+                    className="icon-badge"
+                    style={{ "--badge-colour": ws.colour ?? "#7C3AED" } as React.CSSProperties}
+                  >
+                    {ws.name.charAt(0).toUpperCase()}
+                  </span>
                   <h3>
                     {ws.name}
                     {ws.id === activeId ? <span className="muted"> · current</span> : null}

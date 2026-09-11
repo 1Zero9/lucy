@@ -25,7 +25,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en" data-env={dev ? "dev" : "production"}>
       <head>
-        {/* docs/LUCY_STYLE_GUIDE.md §3 — Inter (UI) + Plus Jakarta Sans (display) */}
+        {/* Inter keeps long-form note content exceptionally readable; Plus
+            Jakarta Sans gives navigation and headings a crisp, contemporary
+            product voice without making the workspace feel like a magazine. */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link

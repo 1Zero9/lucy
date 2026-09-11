@@ -134,11 +134,7 @@ export function ModulesManager({ workspaceId, initialModules }: Props) {
       ) : (
         <div className="module-grid">
           {modules.map((mod) => (
-            <article
-              className="module-card"
-              key={mod.id}
-              style={{ borderLeftColor: mod.colour }}
-            >
+            <article className="module-card" key={mod.id}>
               {editing === mod.id ? (
                 <form
                   className="inline-form"
@@ -167,6 +163,12 @@ export function ModulesManager({ workspaceId, initialModules }: Props) {
               ) : (
                 <>
                   <Link href={`/modules/${mod.id}`} style={{ textDecoration: "none", color: "inherit" }}>
+                    <span
+                      className="icon-badge"
+                      style={{ "--badge-colour": mod.colour } as React.CSSProperties}
+                    >
+                      {mod.name.charAt(0).toUpperCase()}
+                    </span>
                     {mod.code ? <span className="code">{mod.code}</span> : null}
                     <h3>{mod.name}</h3>
                     {mod.description ? <p className="muted">{mod.description}</p> : null}

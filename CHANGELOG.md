@@ -7,6 +7,49 @@ for a pre-1.0 foundation build.
 
 ## [Unreleased]
 
+## [0.19.0] — 2026-09-11
+### Changed
+- **Visual/UX elevation pass** (`AG_update.md`, "5/10 → 8.5/10"): a full
+  reworking of Home, Notes, and card/button/input tactility, landing on a
+  restrained purple identity (`#7C3AED`) rather than the several intermediate
+  directions explored earlier today (paper/notebook, all-sans, ink-blue).
+  - **Home**: rebuilt into a two-column layout — a primary "Continue where
+    you left off" note-tile grid (module-tinted chip, pinned flag, cleaned
+    preview, relative time) beside a sidebar of Today's tasks, next
+    deadline, and workspace stats (subjects/files/stickies counts).
+  - **Notes**: simplified to a focused single-note writing surface —
+    `/notes` redirects straight to the most recently edited note (or an
+    empty state if there are none); the persistent three-pane subject-tabs
+    browser from earlier today was intentionally dropped in favour of this
+    simpler model. Recently Deleted stays its own page.
+  - **Cards/buttons/inputs**: flatter borders with a hover-triggered lift
+    shadow instead of always-on heavy shadows; tactile primary button with
+    its own shadow; note/module cards get a subtle one-shot entrance
+    animation on load (respects `prefers-reduced-motion`).
+  - **Sign-in/sign-up**: leading icons in the email/password fields, a
+    show/hide toggle on the password field, autofocus on the email field
+    (desktop/pointer-fine only — skipped on touch to avoid popping the
+    keyboard before the screen is even seen), a "↵" keyboard-submit hint,
+    smooth border/focus-glow transitions on inputs, and a short trust line
+    ("Fast, private learning workspace — offline-ready").
+  - **Search**: a real (not decorative) ⌘K/Ctrl+K shortcut focuses the Home
+    search field, with a small kbd-style badge inside the input on
+    pointer-fine devices.
+- Fixed a colour inconsistency left over from earlier design passes today —
+  several files (icons, email templates, the PWA manifest, module/workspace
+  default colours) still referenced a blue accent from an abandoned
+  direction while the rest of the app had settled back on purple; all now
+  match `--primary: #7C3AED`.
+- Removed a stray `.next/` directory (from an errant plain `next dev`/`next
+  build` run — this project builds via `vinext`) that was making `tsc`
+  fail against stale generated route types.
+### Note
+- This release supersedes the several other visual directions explored
+  earlier in the same session (paper/notebook skeuomorphism, an all-sans
+  "clean software" pass, an ink-blue/Fraunces "notewise" pass, an
+  App-Store-inspired hero-card pass) — none of those are live; only this
+  one is.
+
 ## [0.18.0] — 2026-09-11
 ### Added
 - **Mobile navigation reprioritised** (UPGRADE.md §6): the bottom bar is
