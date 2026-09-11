@@ -1,7 +1,7 @@
 import { betterAuth } from "better-auth";
 import { env } from "cloudflare:workers";
 import { sendEmail } from "@/lib/email/resend";
-import { verificationEmail } from "@/lib/email/templates";
+import { verificationEmail, resetPasswordEmail } from "@/lib/email/templates";
 import { isProductionEnv } from "@/lib/env";
 
 /**
@@ -37,7 +37,11 @@ function build() {
       // e2e suite and the demo-seed script (both create throwaway accounts
       // with no inbox to click a link from) keep working. See MASTER.md §8.
       requireEmailVerification: isProductionEnv(),
-      minPasswordLength: 10
+      minPasswordLength: 10,
+      sendResetPassword: async ({ user, url }) => {
+        const { subject, text, html } = resetPasswordEmail(url);
+        await sendEmail({ to: user.email, subject, text, html });
+      }
     },
     emailVerification: {
       sendVerificationEmail: async ({ user, url }) => {

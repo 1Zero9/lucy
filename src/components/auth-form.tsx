@@ -128,7 +128,14 @@ export function AuthForm({ mode }: { mode: Mode }) {
       </div>
 
       <div className="field">
-        <label htmlFor="password">Password</label>
+        <div className="field-label-row">
+          <label htmlFor="password">Password</label>
+          {!isSignup ? (
+            <Link href="/forgot-password" className="linkish">
+              Forgot password?
+            </Link>
+          ) : null}
+        </div>
         <input
           id="password"
           name="password"

@@ -7,6 +7,24 @@ for a pre-1.0 foundation build.
 
 ## [Unreleased]
 
+## [0.14.0] — 2026-09-11
+### Added
+- **Forgot password**: a "Forgot password?" link on the sign-in screen,
+  `/forgot-password` (request a reset link) and `/reset-password`
+  (choose a new password) pages, wired to Better Auth's built-in
+  `sendResetPassword`/`resetPassword` endpoints. Doesn't reveal whether an
+  email has an account — same success message either way.
+- **Branded transactional emails**: verification and password-reset emails
+  now share a proper HTML template (`src/lib/email/templates.ts`) — LUCY
+  logo, card layout, primary-colour button — instead of plain unstyled
+  links. Logo URL is derived from the email's own link origin, so a
+  dev-sent email points at the dev icon and a production-sent one at
+  production's.
+### Verified
+- Full round trip tested live via the deployed Resend account (request →
+  email delivered → callback redirect → password reset → sign-in with the
+  new password), both for verification and password-reset.
+
 ## [0.13.1] — 2026-09-11
 ### Fixed
 - Sidebar wasn't pinned to the viewport — on a tall page it stretched to the

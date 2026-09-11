@@ -275,6 +275,21 @@ html[data-env="dev"] .auth {
   color: var(--muted);
 }
 
+.field-label-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.field-label-row label {
+  margin: 0;
+}
+
+.field-label-row .linkish {
+  font-size: 12px;
+}
+
 .field input {
   min-height: 44px;
   border: 1px solid var(--border);
