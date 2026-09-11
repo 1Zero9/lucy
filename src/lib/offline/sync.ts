@@ -201,6 +201,20 @@ export async function flush(): Promise<void> {
   }
 }
 
+/**
+ * Re-check the browser's own connectivity flag before each attempt. A prior
+ * flush can have set `online: false` after a single failed request (a dropped
+ * dev-server connection, a cold start); without this, that flag only clears on
+ * a genuine `online` DOM event, which never fires if the browser was never
+ * really offline — leaving the offline bar stuck.
+ */
+function resync() {
+  if (typeof navigator !== "undefined" && navigator.onLine && !state.online) {
+    notify({ online: true });
+  }
+  void flush();
+}
+
 export function initSync() {
   if (started || typeof window === "undefined") return;
   started = true;
@@ -212,9 +226,10 @@ export function initSync() {
   window.addEventListener("online", onOnline);
   window.addEventListener("offline", onOffline);
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible") void flush();
+    if (document.visibilityState === "visible") resync();
   });
-  window.setInterval(() => void flush(), 20000);
+  window.addEventListener("focus", resync);
+  window.setInterval(resync, 20000);
   queueCount().then((pending) => notify({ pending }));
-  void flush();
+  resync();
 }

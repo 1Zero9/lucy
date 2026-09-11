@@ -48,7 +48,7 @@ export default async function NotesPage({
     <AppShell active="notes">
       <div className="topbar">
         <div>
-          <h1 style={{ margin: 0, fontSize: 22 }}>Notes</h1>
+          <h1 className="page-title">Notes</h1>
           <span className="muted" style={{ fontSize: 14 }}>
             in {active.name}
           </span>

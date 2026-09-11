@@ -20,7 +20,7 @@ export default async function DrawingsPage() {
     <AppShell active="study">
       <div className="topbar">
         <div>
-          <h1 style={{ margin: 0, fontSize: 22 }}>Drawings</h1>
+          <h1 className="page-title">Drawings</h1>
           <span className="muted" style={{ fontSize: 14 }}>
             in {active.name}
           </span>

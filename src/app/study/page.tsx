@@ -41,7 +41,7 @@ export default async function StudyPage() {
     <AppShell active="study">
       <div className="topbar">
         <div>
-          <h1 style={{ margin: 0, fontSize: 22 }}>Study</h1>
+          <h1 className="page-title">Study</h1>
           <span className="muted" style={{ fontSize: 14 }}>
             in {active.name}
           </span>

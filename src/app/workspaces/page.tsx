@@ -16,7 +16,7 @@ export default async function WorkspacesPage() {
   return (
     <AppShell active="workspaces">
       <div className="topbar">
-        <h1 style={{ margin: 0, fontSize: 22 }}>Workspaces</h1>
+        <h1 className="page-title">Workspaces</h1>
       </div>
       <p className="muted" style={{ marginTop: 0 }}>
         A workspace is a top-level learning context — a degree, a certification, a course, a

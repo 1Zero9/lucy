@@ -19,7 +19,7 @@ export default async function ResearchPage() {
     <AppShell active="study">
       <div className="topbar">
         <div>
-          <h1 style={{ margin: 0, fontSize: 22 }}>Research</h1>
+          <h1 className="page-title">Research</h1>
           <span className="muted" style={{ fontSize: 14 }}>
             in {active.name}
           </span>

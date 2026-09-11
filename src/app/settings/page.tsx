@@ -11,7 +11,7 @@ export default async function SettingsPage() {
   return (
     <AppShell active="settings">
       <div className="topbar">
-        <h1 style={{ margin: 0, fontSize: 22 }}>Settings</h1>
+        <h1 className="page-title">Settings</h1>
         <SignOutButton />
       </div>
 

@@ -18,7 +18,7 @@ export default async function RevisePage() {
   return (
     <AppShell active="study">
       <div className="topbar">
-        <h1 style={{ margin: 0, fontSize: 22 }}>Revision — {active.name}</h1>
+        <h1 className="page-title">Revision — {active.name}</h1>
       </div>
       <RevisionSession initialQueue={queue} />
     </AppShell>

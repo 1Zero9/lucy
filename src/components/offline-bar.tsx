@@ -20,7 +20,7 @@ export function OfflineBar() {
 
   let message: string;
   if (s.error) message = s.error;
-  else if (!s.online) message = "You’re offline. Changes are saved on this device and will sync when you reconnect.";
+  else if (!s.online) message = "You’re offline. Saved on this device — we’ll sync when you reconnect.";
   else message = "Syncing changes…";
 
   return (

@@ -19,7 +19,7 @@ export default async function StickiesPage() {
     <AppShell active="home">
       <div className="topbar">
         <div>
-          <h1 style={{ margin: 0, fontSize: 22 }}>Stickies</h1>
+          <h1 className="page-title">Stickies</h1>
           <span className="muted" style={{ fontSize: 14 }}>
             in {active.name}
           </span>
