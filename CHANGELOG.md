@@ -7,6 +7,23 @@ for a pre-1.0 foundation build.
 
 ## [Unreleased]
 
+## [0.13.1] — 2026-09-11
+### Fixed
+- Sidebar wasn't pinned to the viewport — on a tall page it stretched to the
+  full content height, pushing the new version label (added in 0.13.0) far
+  below the fold. `.sidebar` is now `position: sticky; height: 100dvh`, so
+  it always fills the visible viewport and the version stays visible at
+  its bottom regardless of page length.
+### Added
+- **Required email verification in production**, now that the Resend send
+  path is proven end to end. Scoped to `isProductionEnv()` — dev stays open
+  so the e2e suite and `seed:demo` (both create throwaway accounts with no
+  inbox to click a link from) keep working. `autoSignInAfterVerification`
+  added so clicking the link signs the user straight in instead of bouncing
+  back to a blank sign-in form. Sign-up now shows a "check your inbox" state
+  instead of silently redirecting to a page it can't reach yet. Friendly
+  copy added for the `EMAIL_NOT_VERIFIED` sign-in error.
+
 ## [0.13.0] — 2026-09-11
 ### Added
 - **Visual design pass**: a shared `EmptyState` component (icon + one-line

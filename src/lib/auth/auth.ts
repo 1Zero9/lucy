@@ -2,6 +2,7 @@ import { betterAuth } from "better-auth";
 import { env } from "cloudflare:workers";
 import { sendEmail } from "@/lib/email/resend";
 import { verificationEmail } from "@/lib/email/templates";
+import { isProductionEnv } from "@/lib/env";
 
 /**
  * Better Auth server instance (see MASTER.md §4 — maintained auth library, no
@@ -30,17 +31,23 @@ function build() {
     database: env.DB,
     emailAndPassword: {
       enabled: true,
-      // Sending is wired (Resend, src/lib/email/), but signing in does not yet
-      // require a verified email — flip this once RESEND_API_KEY is set and
-      // the flow has been exercised end to end. See MASTER.md §8.
-      requireEmailVerification: false,
+      // Required in production, where it protects real accounts — Resend is
+      // wired and the send-then-deliver flow has been exercised end to end
+      // (verified via Resend's own delivery log). Left off in dev so the
+      // e2e suite and the demo-seed script (both create throwaway accounts
+      // with no inbox to click a link from) keep working. See MASTER.md §8.
+      requireEmailVerification: isProductionEnv(),
       minPasswordLength: 10
     },
     emailVerification: {
       sendVerificationEmail: async ({ user, url }) => {
         const { subject, text, html } = verificationEmail(url);
         await sendEmail({ to: user.email, subject, text, html });
-      }
+      },
+      // Sign the user straight in once they click the link, instead of
+      // landing them back at a blank sign-in form after they just filled one
+      // out.
+      autoSignInAfterVerification: true
     },
     user: {
       modelName: "users",

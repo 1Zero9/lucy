@@ -84,6 +84,10 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100dvh;
+  overflow-y: auto;
 }
 
 .brand {

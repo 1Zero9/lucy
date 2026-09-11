@@ -11,6 +11,8 @@ function messageFor(mode: Mode, code: string | undefined, fallback: string): str
   if (code === "INVALID_EMAIL_OR_PASSWORD") return "That email and password do not match.";
   if (code === "USER_ALREADY_EXISTS") return "An account with that email already exists.";
   if (code === "PASSWORD_TOO_SHORT") return "Password must be at least 10 characters.";
+  if (code === "EMAIL_NOT_VERIFIED")
+    return "Check your inbox — we've sent a link to verify your email before you can sign in.";
   // No code at all means the request never reached the server — a raw network
   // failure, not a validation error. Don't surface the browser's own message.
   if (!code) return "Couldn't reach LUCY. Check your connection and try again.";
@@ -24,6 +26,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [awaitingVerification, setAwaitingVerification] = useState(false);
 
   const isSignup = mode === "signup";
 
@@ -32,18 +35,55 @@ export function AuthForm({ mode }: { mode: Mode }) {
     setBusy(true);
     setError(null);
 
-    const { error: authError } = isSignup
-      ? await signUp.email({ name: name.trim(), email: email.trim(), password })
-      : await signIn.email({ email: email.trim(), password });
+    if (isSignup) {
+      const { data, error: authError } = await signUp.email({
+        name: name.trim(),
+        email: email.trim(),
+        password
+      });
+      if (authError) {
+        setError(messageFor(mode, authError.code, authError.message ?? ""));
+        setBusy(false);
+        return;
+      }
+      // Email verification is required — sign-up creates the account but does
+      // not start a session until the link is clicked. Without this check the
+      // page would silently redirect to "/" and bounce straight back to
+      // /login with no explanation.
+      if (!data?.token) {
+        setAwaitingVerification(true);
+        setBusy(false);
+        return;
+      }
+      router.push("/");
+      router.refresh();
+      return;
+    }
 
+    const { error: authError } = await signIn.email({ email: email.trim(), password });
     if (authError) {
       setError(messageFor(mode, authError.code, authError.message ?? ""));
       setBusy(false);
       return;
     }
-
     router.push("/");
     router.refresh();
+  }
+
+  if (awaitingVerification) {
+    return (
+      <div className="auth-card">
+        <img className="auth-mark" src="/icons/lucy-app-icon-64.png" alt="" width={40} height={40} />
+        <h1>Check your inbox</h1>
+        <p className="sub">
+          We&rsquo;ve sent a verification link to <strong>{email.trim()}</strong>. Click it to
+          finish creating your account, then sign in.
+        </p>
+        <Link className="btn" href="/login" style={{ textAlign: "center", textDecoration: "none" }}>
+          Go to sign in
+        </Link>
+      </div>
+    );
   }
 
   return (
