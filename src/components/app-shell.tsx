@@ -11,8 +11,9 @@ import {
   SettingsIcon,
   TasksIcon
 } from "@/components/icons";
+import { MobileNav } from "@/components/mobile-nav";
 
-type Section =
+export type Section =
   | "home"
   | "search"
   | "notes"
@@ -23,12 +24,21 @@ type Section =
   | "workspaces"
   | "settings";
 
-const PRIMARY: { section: Section; href: string; label: string; icon: typeof HomeIcon }[] = [
-  { section: "home", href: "/", label: "Home", icon: HomeIcon },
-  { section: "search", href: "/search", label: "Search", icon: SearchIcon },
+type NavItem = {
+  section: Section;
+  href: string;
+  label: string;
+  icon: typeof HomeIcon;
+  /** Also on the mobile bottom bar (MobileNav) — drop the duplicate from this list on phones. */
+  onMobileBar?: boolean;
+};
+
+const PRIMARY: NavItem[] = [
+  { section: "home", href: "/", label: "Home", icon: HomeIcon, onMobileBar: true },
+  { section: "search", href: "/search", label: "Search", icon: SearchIcon, onMobileBar: true },
   { section: "notes", href: "/notes", label: "Notes", icon: NotesIcon },
-  { section: "modules", href: "/modules", label: "Modules", icon: ModulesIcon },
-  { section: "tasks", href: "/tasks", label: "Tasks", icon: TasksIcon }
+  { section: "modules", href: "/modules", label: "Modules", icon: ModulesIcon, onMobileBar: true },
+  { section: "tasks", href: "/tasks", label: "Tasks", icon: TasksIcon, onMobileBar: true }
 ];
 
 // "Study" groups Research / Flashcards / Revision / Drawing behind one hub
@@ -57,8 +67,13 @@ function NavGroup({
     <div className="nav-group">
       {label ? <div className="nav-label">{label}</div> : null}
       <nav className="nav" aria-label={label ?? "Primary"}>
-        {items.map(({ section, href, label: text, icon: Icon }) => (
-          <Link key={section} href={href} aria-current={active === section ? "page" : undefined}>
+        {items.map(({ section, href, label: text, icon: Icon, onMobileBar }) => (
+          <Link
+            key={section}
+            href={href}
+            className={onMobileBar ? "nav-mobile-hide" : undefined}
+            aria-current={active === section ? "page" : undefined}
+          >
             <Icon size={20} />
             {text}
           </Link>
@@ -70,10 +85,13 @@ function NavGroup({
 
 export function AppShell({
   children,
-  active
+  active,
+  workspaceId
 }: {
   children: ReactNode;
   active?: Section;
+  /** Active workspace, if the page has one resolved — feeds the mobile "+" fast-capture sheet. */
+  workspaceId?: string;
 }) {
   return (
     <div className="shell">
@@ -88,6 +106,7 @@ export function AppShell({
         <NavGroup label="Account" items={UTILITY} active={active} />
       </aside>
       <main className="main">{children}</main>
+      <MobileNav active={active} workspaceId={workspaceId} />
     </div>
   );
 }

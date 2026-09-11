@@ -14,7 +14,7 @@ export default async function WorkspacesPage() {
   const { active } = await resolveActiveWorkspace(user.id);
 
   return (
-    <AppShell active="workspaces">
+    <AppShell active="workspaces" workspaceId={active?.id}>
       <div className="topbar">
         <h1 className="page-title">Workspaces</h1>
       </div>

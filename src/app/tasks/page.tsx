@@ -17,7 +17,7 @@ export default async function TasksPage() {
   const tasks = await listTasks(getDb(), user.id, active.id);
 
   return (
-    <AppShell active="tasks">
+    <AppShell active="tasks" workspaceId={active.id}>
       <div className="topbar">
         <div>
           <h1 className="page-title">Tasks</h1>

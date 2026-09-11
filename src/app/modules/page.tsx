@@ -17,7 +17,7 @@ export default async function ModulesPage() {
   const modules = await listModules(getDb(), user.id, active.id);
 
   return (
-    <AppShell active="modules">
+    <AppShell active="modules" workspaceId={active.id}>
       <div className="topbar">
         <div>
           <h1 className="page-title">Modules</h1>

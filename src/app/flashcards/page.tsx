@@ -23,7 +23,7 @@ export default async function FlashcardsPage() {
   ]);
 
   return (
-    <AppShell active="study">
+    <AppShell active="study" workspaceId={active.id}>
       <div className="topbar">
         <div>
           <h1 className="page-title">Flashcards</h1>

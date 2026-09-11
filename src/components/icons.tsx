@@ -121,3 +121,39 @@ export function SettingsIcon(props: IconProps) {
 export function PlusIcon(props: IconProps) {
   return base("currentColor")(props, <path d="M12 5v14M5 12h14" />);
 }
+
+export function StickyIcon(props: IconProps) {
+  return base("#F59E0B")(props, (
+    <>
+      <path d="M5 4h14v11l-5 5H5z" />
+      <path d="M14 20v-5h5" />
+    </>
+  ));
+}
+
+export function DrawingIcon(props: IconProps) {
+  return base("#7C3AED")(props, (
+    <>
+      <path d="m4 20 4.5-1 10-10-3.5-3.5-10 10z" />
+      <path d="m13.5 7 3.5 3.5" />
+    </>
+  ));
+}
+
+export function UploadIcon(props: IconProps) {
+  return base("#2563EB")(props, (
+    <>
+      <path d="M12 16V4M7 9l5-5 5 5" />
+      <path d="M5 20h14" />
+    </>
+  ));
+}
+
+export function CameraIcon(props: IconProps) {
+  return base("#2563EB")(props, (
+    <>
+      <path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z" />
+      <circle cx="12" cy="14" r="3.5" />
+    </>
+  ));
+}

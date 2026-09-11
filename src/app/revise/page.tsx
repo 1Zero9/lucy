@@ -16,7 +16,7 @@ export default async function RevisePage() {
   const queue = await listDueFlashcards(getDb(), user.id, active.id);
 
   return (
-    <AppShell active="study">
+    <AppShell active="study" workspaceId={active.id}>
       <div className="topbar">
         <h1 className="page-title">Revision — {active.name}</h1>
       </div>

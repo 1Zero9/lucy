@@ -42,7 +42,7 @@ export default async function SearchPage({
     : 0;
 
   return (
-    <AppShell active="search">
+    <AppShell active="search" workspaceId={active.id}>
       <div className="topbar">
         <div>
           <h1 className="page-title">Search</h1>

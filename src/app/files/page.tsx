@@ -16,7 +16,7 @@ export default async function FilesPage() {
   const attachments = await listAttachments(getDb(), user.id, active.id);
 
   return (
-    <AppShell active="files">
+    <AppShell active="files" workspaceId={active.id}>
       <div className="topbar">
         <div>
           <h1 className="page-title">Files</h1>

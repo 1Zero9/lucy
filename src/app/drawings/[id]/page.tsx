@@ -15,7 +15,7 @@ export default async function DrawingPage({ params }: { params: Promise<{ id: st
   if (!drawing) notFound();
 
   return (
-    <AppShell active="study">
+    <AppShell active="study" workspaceId={drawing.workspace_id}>
       <p style={{ marginTop: 0 }}>
         <Link className="linkish" href="/drawings">
           ← All drawings

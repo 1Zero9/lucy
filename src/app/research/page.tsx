@@ -16,7 +16,7 @@ export default async function ResearchPage() {
   const items = await listResearch(getDb(), user.id, active.id);
 
   return (
-    <AppShell active="study">
+    <AppShell active="study" workspaceId={active.id}>
       <div className="topbar">
         <div>
           <h1 className="page-title">Research</h1>

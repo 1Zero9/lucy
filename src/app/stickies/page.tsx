@@ -16,7 +16,7 @@ export default async function StickiesPage() {
   const stickies = await listStickies(getDb(), user.id, active.id);
 
   return (
-    <AppShell active="home">
+    <AppShell active="home" workspaceId={active.id}>
       <div className="topbar">
         <div>
           <h1 className="page-title">Stickies</h1>

@@ -17,7 +17,7 @@ export default async function TrashPage() {
   const notes = await listNotes(getDb(), user.id, active.id, { deleted: true });
 
   return (
-    <AppShell active="notes">
+    <AppShell active="notes" workspaceId={active.id}>
       <div className="topbar">
         <div>
           <h1 className="page-title">Recently Deleted</h1>

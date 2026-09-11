@@ -17,7 +17,7 @@ export default async function DrawingsPage() {
   const drawings = await listDrawings(getDb(), user.id, active.id);
 
   return (
-    <AppShell active="study">
+    <AppShell active="study" workspaceId={active.id}>
       <div className="topbar">
         <div>
           <h1 className="page-title">Drawings</h1>

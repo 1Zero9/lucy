@@ -45,7 +45,7 @@ export default async function NotesPage({
   );
 
   return (
-    <AppShell active="notes">
+    <AppShell active="notes" workspaceId={active.id}>
       <div className="topbar">
         <div>
           <h1 className="page-title">Notes</h1>

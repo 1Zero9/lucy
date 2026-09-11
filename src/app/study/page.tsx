@@ -38,7 +38,7 @@ export default async function StudyPage() {
   ];
 
   return (
-    <AppShell active="study">
+    <AppShell active="study" workspaceId={active.id}>
       <div className="topbar">
         <div>
           <h1 className="page-title">Study</h1>

@@ -30,7 +30,7 @@ export default async function NotePage({ params }: { params: Promise<{ id: strin
   ]);
 
   return (
-    <AppShell active="notes">
+    <AppShell active="notes" workspaceId={note.workspace_id}>
       <p style={{ marginTop: 0 }}>
         <Link className="linkish" href="/notes">
           ← All notes

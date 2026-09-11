@@ -36,7 +36,7 @@ export default async function Page() {
   const recentFiles = files.slice(0, 4);
 
   return (
-    <AppShell active="home">
+    <AppShell active="home" workspaceId={active.id}>
       <div className="topbar">
         <WorkspaceSwitcher workspaces={all} activeId={active.id} />
         <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
