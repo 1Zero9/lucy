@@ -1,128 +1,252 @@
-# LUCY — Home Experience Upgrade
+# LUCY — Notes, Study, and Trust Upgrade Assessment
 
-## Purpose
+Assessment date: 11 September 2026. Reviewed development deployment: v0.15.0.
 
-Make the authenticated Home screen feel as calm, obvious, and focused as the
-sign-in screen. The primary job of Home is to help a person quickly resume
-their learning; it is not a dashboard of every feature.
+This replaces the earlier Home-only upgrade brief. It records a read-only review
+of Home, Modules, Notes, the editor, Study, Flashcards, the phone layout, and
+relevant repository code. Destructive operations were not exercised. This is
+not a security certification or legal compliance opinion. Recheck findings
+against the current implementation before making changes.
 
-This is a UI/UX upgrade brief only. It does not expand the product scope or
-change data ownership, authentication, offline sync, or storage architecture.
+## Product brief
 
-## Product principle
+LUCY is primarily a notes-taking and study app for school and college users,
+with flexible naming for other learning contexts. It must be intuitive, easy,
+functional, private, and dependable. AI/Intelligence remains on the backlog.
 
-On arrival, a person should immediately understand:
+The interface is becoming calmer, but its main weakness is how the pieces
+connect. Students must navigate between separate tools and organise things
+manually. The product should carry subject and source context for them.
 
-1. What they were working on.
-2. What needs attention today.
-3. Where to capture a new note.
+These are planning proposals, not completed features or instructions to build
+everything at once. MASTER.md remains the governing project document. Retain
+Cloudflare Workers, D1, and private R2 as the platform.
 
-Everything else should be available, but visually secondary.
+## 1. Make subjects useful places to work
 
-## Target Home layout
+Modules cards look like destinations, but only offer Rename and Delete.
+Selecting a subject should open its notes, with Files and Flashcards alongside
+them. Creating an item there should automatically assign it to that subject.
 
-```text
-Workspace selector                         New note
+Keep the organisation straightforward:
 
-Search this workspace
+- Workspace: the overall course or learning context.
+- Subject/module: where related material lives.
+- Notes: the main working material.
+- Files, flashcards, and tasks: connected supporting material.
 
-Continue
-[ most recently edited note ]
-[ up to three recent notes ]
+Folders and tags are optional refinements. They currently receive more
+prominence in the editor than the subject itself.
 
-Today
-[ due and overdue tasks ]             [ next upcoming deadline ]
+## 2. Complete the connections between items
 
-Workspace
-[ Stickies ]  [ Files ]  [ Modules ]
-```
-
-### Section behaviour
-
-| Section | Purpose | Default presentation |
+| Relationship | Finding in reviewed version | Recommended experience |
 |---|---|---|
-| Search | Find any existing learning material | Full-width, prominent field near the top |
-| Continue | Resume active work | One featured note, then no more than three compact note rows |
-| Today | Identify the immediate next action | One compact card combining overdue, due today, and next deadline |
-| Workspace | Reach supporting material | Three quiet summary links/cards for Stickies, Files, and Modules |
+| Note → subject | Editor exposes folders but no subject selector; the note update endpoint lacks module reassignment. | A visible subject label opens a searchable “Move to subject” picker. |
+| Note → another note | Link button inserts Markdown URL syntax. | “Link to note” searches titles and inserts a readable link that survives renaming. |
+| Note → flashcard | API supports a source note, but the flashcard form does not expose it. | Select text → “Create flashcard”; retain source note and subject automatically. |
+| Flashcard → source | No source-note link is visible in the reviewed card interface. | “Open source note” during editing and revision. |
+| File → subject/note | Files can attach to notes, but organisation is not clearly exposed. | Upload in context, inherit the subject, and attach existing files without duplicating them. |
 
-Do not show separate large panels for Today, Coming up, Stickies, Recent files,
-Continue, and Modules at the same visual weight.
+Show related notes and flashcards in a compact section beneath the note.
+Students should move from explanation to practice and back without searching
+again. Validate every relationship against the authenticated owner on the server.
 
-## Styling direction
+## 3. Make the editor the primary work surface
 
-- Preserve the sign-in screen's generous whitespace, restrained shadows, soft
-  borders, and single strong purple action colour.
-- Use fewer containing cards. Group only meaningful units; use spacing and
-  light dividers within a group.
-- Make `New note` the one prominent page action. Keep it consistently placed
-  at the top-right on desktop and in the centre mobile create action.
-- Use `View all` consistently for secondary destinations rather than mixing
-  phrases such as “All tasks”, “Open board”, “All files”, and “Manage modules”.
-- Keep the desktop rail useful but visually quiet. The selected navigation pill
-  should be smaller and less saturated so page content carries the focus.
-- Use feature colours sparingly. Purple signals the current location and
-  primary action; other feature colours should be limited to small icons or
-  metadata, never competing panels.
-- Avoid dense card grids. A clear vertical reading order is preferable for a
-  personal learning workspace.
+The default exposes Markdown punctuation and Write/Split/Preview modes. For
+this audience, use formatted editing by default: bold looks bold, headings look
+like headings, and pasted text remains readable. Markdown can remain optional.
 
-## Navigation
+Treat an editor replacement as a separately scoped task that preserves existing
+content, history, exportability, and offline behaviour.
 
-### Desktop
+At the reviewed 390 × 844 phone viewport, writing begins roughly 560 pixels
+down the screen. Metadata occupies much of the space above it.
 
-- Keep the persistent rail: Home, Search, Notes, Modules, Tasks.
-- Keep Files and Study as secondary destinations.
-- Retain Workspaces, Help, and Settings as account/utility destinations.
-- Reduce the selected Home treatment to a compact, low-contrast active state.
+Recommended order:
 
-### Mobile
+1. Small breadcrumb and visible subject.
+2. Note title with quiet save status.
+3. Compact formatting controls.
+4. Writing surface.
+5. Attachments and related material below.
 
-- Keep only the bottom navigation visible: Home, Modules, Create, Tasks,
-  Search.
-- Do not render the desktop secondary/sidebar navigation as a horizontal menu
-  above mobile content.
-- Put Files, Study, Workspaces, Help, and Settings behind a single `More` or
-  profile destination.
-- Preserve 44px minimum touch targets.
+Keep subject assignment easy to find. Put colour, tags, history, export, and
+deletion in Details or an overflow menu. This revises the earlier brief:
+hiding all organisation would go too far; subject context is essential.
 
-## Note editor follow-up
+## 4. Give buttons consistent meaning
 
-The editor should remain the primary work surface. In a later, separately
-scoped pass, keep title and save status visible and place pin, colours, folder,
-tags, version history, and delete in a compact details or overflow control.
-This prevents note metadata from competing with writing.
+Observed inconsistencies:
 
-## Offline and file trust
+- Flashcard Edit and Delete visually run together.
+- The flashcard subject dropdown looks unstyled beside styled inputs.
+- “Revise 3 due” appears as underlined text inside a purple button.
+- Delete is repeatedly visible beside ordinary content.
+- Generic “Add” buttons provide little context.
 
-- Keep note sync state honest and quiet: `Saved`, `Saving…`, `Offline — saved
-  locally`, and `Syncing…`.
-- Show a full offline banner only when it communicates actionable unsynced work;
-  do not let it dominate sign-in or ordinary browsing.
-- State clearly that attachments are online-only until offline file support is
-  deliberately built. Do not imply that files are locally available when they
-  are not.
-- Preserve the current private-file model: authenticated server routes validate
-  ownership before retrieving R2 objects; raw R2 keys remain private.
+Use filled purple for the primary action, neutral buttons for secondary actions,
+and overflow menus for occasional management. Prefer explicit labels such as
+“New subject”, “Add flashcard”, and “Review 3 cards”.
 
-## Acceptance criteria
+Clickable cards should open their content. Rename and delete belong in their
+menu. Preserve 44px minimum touch targets, visible keyboard focus, accessible
+names, and spacing even when reducing visual weight. Reversible deletion
+should offer Undo; permanent deletion requires explicit confirmation.
 
-1. A new user can identify the main next action on Home in about three seconds.
-2. `Continue` and `New note` are the visual priorities.
-3. Home presents no more than three primary content groups before supporting
-   workspace links.
-4. Mobile has no duplicated desktop navigation above the page content.
-5. All existing Home information remains reachable without adding a new
-   dashboard screen.
-6. Offline and file availability messaging remains accurate.
-7. The change uses existing LUCY design tokens and retains responsive,
-   keyboard-accessible controls.
+## 5. Adjust visual density
 
-## Suggested implementation order
+Retain the purple, white, and muted background palette. Distraction comes from
+large rounded cards, repeated borders, shadows, coloured icons, and large gaps
+around small amounts of information. Home has better priorities, but four
+recent notes still consume most of the desktop viewport.
 
-1. Remove duplicated mobile navigation and simplify the active rail styling.
-2. Recompose Home around Search, Continue, Today, and Workspace.
-3. Standardise secondary-link copy and reduce card/border density.
-4. Verify desktop, tablet, and phone layouts with real long titles, empty
-   states, and offline note state.
-5. Run lint, typecheck, relevant tests, and a production build before release.
+Recommended styling:
+
+- Compact note rows with title, subject, clean excerpt, and a useful date.
+- Fewer shadows and heavy coloured card edges.
+- Consistent input/button heights and spacing using existing design tokens.
+- Purple mainly for selection and meaningful actions.
+- Clean previews: Home currently exposes Markdown markers such as `##` and `**`.
+- Consistent, readable dates such as “11 Sep” or “Yesterday”.
+
+Carry the sign-in screen's restraint across. Its large amount of empty space
+is less appropriate for a working notebook.
+
+## 6. Prioritise notes in navigation
+
+Mobile has improved: the duplicated top menu is gone. However, Tasks has a
+permanent bottom destination while Notes does not. That priority does not
+match the primary notes-and-study brief.
+
+Proposed mobile destinations: Notes, Subjects, Create, Review, Search. Keep
+Home and supporting tools accessible through the compact menu. This proposes
+revising existing navigation rules; align project documents when implementing
+an agreed navigation change.
+
+On desktop, provide quiet subject/navigation controls and a note list beside
+the editor, so switching notes does not require returning to a full-page list.
+On phones, retain a simple list-to-note transition.
+
+Home remains a useful starting point with Search, Continue, Today, and quiet
+supporting links. Improving subject-to-note navigation matters more than
+another Home redesign.
+
+## 7. Resolve data-safety and local-privacy gaps
+
+Server ownership checks and private file routes are useful foundations.
+These are code-review findings, not reproduced incidents, and qualify earlier
+positive assessments of offline reliability.
+
+### Failed saves leave the retry queue
+
+In [sync.ts](src/lib/offline/sync.ts), `flush()` removes queued edits for errors
+other than conflicts or authentication failures, including server errors. This
+can stop automatic recovery. Preserve pending work until success or an explicit,
+recoverable resolution; transient failures must remain retryable.
+
+### Conflict preservation is not confirmed
+
+`preserveAsHistory()` ignores request failures and does not check response
+success. The conflict branch then removes the queue entry and replaces the
+local cache. The losing edit is not guaranteed to have been preserved.
+
+Confirm durable preservation before replacing the local edit. Keep a recoverable
+local copy while preservation is pending or fails.
+
+### Shared-device isolation needs verification and correction
+
+[IndexedDB records](src/lib/offline/store.ts) are not account-scoped.
+The [service worker](public/sw.js) caches authenticated pages by URL, and
+[sign-out](src/components/sign-out-button.tsx) does not clear or isolate stored
+content. Test account-switch and offline-logout behaviour before shared school
+device use.
+
+Define account-scoped cache and queue lifecycles. Protect unsynced work during
+logout without leaving it accessible to the next account. Do not silently erase
+pending edits as a shortcut to solving local privacy.
+
+## 8. Define offline access, backup, and export precisely
+
+Existing cached note editing is supported. Creating a new note still requires
+a server request, and file downloads bypass the offline cache. Do not represent
+these capabilities as universal offline access.
+
+Proposed improvements:
+
+- “Keep available offline” for selected subjects and files, with confirmed
+  availability and storage usage.
+- A shared-device policy and controls protecting local data and pending work.
+- Offline note creation, designed and verified as a separate capability.
+- Quiet, accurate states: Saved, Saving…, Saved on this device, Syncing…,
+  and action-required errors.
+
+Independent backups remain future work in
+[ARCHITECTURE.md](docs/ARCHITECTURE.md). No user-facing whole-workspace export
+was found in the reviewed implementation.
+
+Prioritise:
+
+1. Scheduled backups covering database records and actual file contents.
+2. Tested restoration into a separate environment, with documented retention,
+   recovery time, and potential data-loss window.
+3. Downloadable notes in readable formats, original attachments, and structured
+   metadata preserving relationships. Verify exported material is usable.
+4. Recovery controls that remain useful after refreshing or signing in again.
+
+Do not promise that data “will always be there”. Provide verifiable evidence:
+confirmed saves, offline copies, recoverable history, tested backups, and usable
+exports. Sync is not backup. Backup retention must fit deletion obligations.
+
+## 9. Make privacy understandable and actionable
+
+Provide a privacy notice, retention rules, an account deletion process, a
+rights-request contact, and documented provider arrangements. Confirm controller
+and processor responsibilities, lawful bases, and any international-transfer
+arrangements for the actual deployment.
+
+GDPR involves purpose, lawful basis, transparency, minimisation, retention,
+security, and accountability. Secure hosting alone does not establish compliance.
+See the [DPC principles of data protection](https://dataprotection.ie/en/organisations/data-protection-basics/principles-data-protection).
+
+School users may be children. Age-appropriate explanations and protective
+defaults need deliberate attention. School-managed deployment raises different
+responsibilities from individual accounts. See the
+[DPC guidance on children's data](https://www.dataprotection.ie/en/dpc-guidance/fundamentals-child-oriented-approach-data-processing).
+
+Keep AI on the backlog. A conventional notes app does not become high-risk
+under the AI Act simply because students use it. Assess intended functionality
+and applicable obligations when AI is proposed, especially anything influencing
+educational assessment or access. See the
+[European Commission AI Act guidance](https://digital-strategy.ec.europa.eu/en/faqs/navigating-ai-act).
+Recheck official guidance at implementation time.
+
+## Recommended implementation order
+
+1. Save/recovery and local-privacy fixes, with meaningful failure and
+   account-isolation tests.
+2. One complete subject → note → flashcard → source-note journey.
+3. Formatted editor and consistent controls, including phone usability.
+4. Fuller offline access, usable export, and verified backup restoration.
+
+Establish privacy responsibilities and user-facing policies alongside this work,
+before wider deployment. Implement the smallest complete task at each step.
+
+## Acceptance checks for future implementation
+
+- A student can open a subject, create a note, and find it there without
+  selecting the subject again.
+- Existing notes can move to a subject without losing content or relationships.
+- Note links survive renaming; flashcards open their source notes.
+- Formatting does not require Markdown knowledge; existing content and history
+  survive editor changes.
+- Phone users reach writing quickly, with usable controls and keyboard focus.
+- Failed requests and failed conflict preservation retain recoverable edits.
+- Offline content and pending mutations do not cross account boundaries.
+- Offline labels describe confirmed capabilities.
+- A backup restores in isolation and an export can be read independently.
+- Implementation changes meet required typecheck, lint, relevant tests, practical
+  production build, user-isolation, and secret-handling checks.
+
+No implementation or test execution is claimed by this document.

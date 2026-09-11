@@ -102,22 +102,28 @@ polish, then offline/export/backup. GDPR/privacy-policy items (§9) are
 product/legal decisions, not engineering tasks — tracked separately below,
 not silently authored.
 
-### 8A — Save/recovery and local-privacy fixes (UPGRADE.md §7)
-- [ ] `flush()` keeps queued edits on transient/server-error failures instead
+### 8A — Save/recovery and local-privacy fixes (UPGRADE.md §7) — done, v0.16.0
+- [x] `flush()` keeps queued edits on transient/server-error failures instead
       of dropping them — only conflict (409, handled) and a small set of
       genuinely terminal errors clear the queue
-- [ ] `preserveAsHistory()` checks the response and only proceeds with the
+- [x] `preserveAsHistory()` checks the response and only proceeds with the
       conflict swap once history is confirmed saved; keep the local losing
       edit recoverable if preservation itself fails
-- [ ] IndexedDB cache/queue keys are account-scoped (not just note id), so a
+- [x] IndexedDB cache/queue keys are account-scoped (not just note id), so a
       second account on the same device/browser can't see the first
       account's cached notes or queued edits
-- [ ] Sign-out clears or isolates the local cache/queue for that account
-      without silently discarding unsynced work — warn before discarding,
-      or scope it forward to the next sign-in of the same account
-- [ ] Tests: failed-save retains queue entry; conflict preservation is
-      confirmed before swap; second account on one device cannot read the
-      first account's offline data
+- [x] Sign-out flushes pending work first, then warns (with a count and
+      confirm) before leaving unsynced edits on a shared device — never
+      silently discards; the sync layer detaches from the account
+      (`setAccount(null)`) so its in-memory state can't linger for the next
+      sign-in either
+- [~] Tests: failed-save-retains-queue and conflict-preservation-confirmed
+      are verified by code review + tsc/lint (pure branching logic, no
+      external state); server-side behaviour (409/401/ownership) already
+      covered by the existing e2e suite (20/20, unaffected). Account
+      isolation itself is IndexedDB-only client logic with no browser test
+      harness in this repo (node --test has no indexedDB) — needs a manual
+      two-account-in-one-browser smoke test before calling it fully proven.
 
 ### 8B — One complete subject → note → flashcard → source-note journey
 (UPGRADE.md §1–2, the "smallest complete task" from the recommended order,

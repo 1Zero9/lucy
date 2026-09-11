@@ -4,10 +4,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Note, NoteVersion } from "@/lib/db/notes";
 import { Markdown } from "@/components/markdown";
+import { useSession } from "@/lib/auth/client";
 import {
   dismissConflict,
   flush,
   getSyncState,
+  initSync,
   queueNoteUpdate,
   readCachedNoteFor,
   seedNoteCache,
@@ -44,6 +46,8 @@ export function NoteEditor({
   initialVersions: NoteVersion[];
 }) {
   const router = useRouter();
+  const { data: session } = useSession();
+  const accountId = session?.user?.id ?? null;
   const [title, setTitle] = useState(note.title);
   const [text, setText] = useState(note.content_text);
   const [mode, setMode] = useState<Mode>("write");
@@ -58,10 +62,16 @@ export function NoteEditor({
   const latest = useRef({ title: note.title, text: note.content_text });
   const base = useRef(note.updated_at);
 
-  // Seed / adopt the local cache and track sync status.
+  // Seed / adopt the local cache and track sync status. Guarded on knowing
+  // the signed-in account — the offline layer refuses to touch its cache or
+  // queue for an unknown account (UPGRADE.md §7: shared-device isolation).
   useEffect(() => {
+    if (!accountId) return;
     let cancelled = false;
-    void seedNoteCache(note).then(() => readCachedNoteFor(note.id)).then((c) => {
+    // Idempotent — safe even if OfflineBar's own initSync() hasn't run yet
+    // (component mount order isn't guaranteed).
+    initSync(accountId);
+    void seedNoteCache(note).then(() => readCachedNoteFor(note.id, accountId)).then((c) => {
       if (cancelled || !c) return;
       base.current = c.serverUpdatedAt;
       if (c.dirty) {
@@ -75,7 +85,7 @@ export function NoteEditor({
       setSync(s);
       if (!s.syncing && s.pending === 0) {
         setDirty(false);
-        void readCachedNoteFor(note.id).then((c) => {
+        void readCachedNoteFor(note.id, accountId).then((c) => {
           if (c) base.current = c.serverUpdatedAt;
         });
         void refreshVersions();
@@ -86,7 +96,7 @@ export function NoteEditor({
       unsub();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [note.id]);
+  }, [note.id, accountId]);
 
   const refreshVersions = useCallback(async () => {
     try {

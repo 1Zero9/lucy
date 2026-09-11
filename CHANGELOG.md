@@ -7,6 +7,32 @@ for a pre-1.0 foundation build.
 
 ## [Unreleased]
 
+## [0.16.0] — 2026-09-11
+### Fixed
+- **Offline save/recovery** (`src/lib/offline/sync.ts`): `flush()` was
+  dropping a queued edit on *any* non-conflict, non-auth error, including
+  transient server failures — a 500 could silently lose an unsynced note
+  change. Now only conflict (handled explicitly) and genuinely terminal
+  4xx failures clear the queue; 5xx and network errors keep retrying.
+  `preserveAsHistory()` (which saves the "losing" copy of a note before a
+  conflict adopts the server's version) previously ignored whether that
+  save actually succeeded — it now checks the response and holds the
+  local edit until preservation is confirmed, instead of swapping it out
+  on a guess.
+### Added
+- **Shared-device / account isolation**: the local IndexedDB cache and
+  sync queue are now account-scoped (`accountId` on every cached note and
+  queued edit). A second account signing in on the same browser/device can
+  no longer see or accidentally flush the first account's cached notes or
+  unsynced edits — the sync layer refuses to touch storage until it knows
+  which account it's scoped to (`setAccount()`), and re-scopes on every
+  account change without needing a full page reload.
+- **Sign-out with pending work**: signing out now flushes any unsynced
+  edits first; if some remain (offline, or a server issue), it tells you
+  how many and lets you choose — sync on next sign-in, or cancel — instead
+  of silently discarding them or leaving them exposed to the next account
+  on a shared device.
+
 ## [0.15.0] — 2026-09-11
 ### Changed
 - **Home Experience Upgrade** (UPGRADE.md), a full recomposition of the

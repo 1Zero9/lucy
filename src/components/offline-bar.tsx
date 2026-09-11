@@ -1,13 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSession } from "@/lib/auth/client";
 import { getSyncState, initSync, flush, subscribeSync, type SyncState } from "@/lib/offline/client";
 
 export function OfflineBar() {
+  const { data: session } = useSession();
+  const accountId = session?.user?.id ?? null;
   const [s, setS] = useState<SyncState>(getSyncState());
 
   useEffect(() => {
-    initSync();
+    // Re-scoping to the current account (including `null` while signed out,
+    // or when it changes without a full page reload) is what keeps one
+    // account's pending work from bleeding into another's on a shared
+    // device — see setAccount() in src/lib/offline/sync.ts.
+    initSync(accountId);
     const unsub = subscribeSync(setS);
     // Only register the service worker in production. In `npm run dev`, the
     // dev server process restarts constantly while iterating; a registered SW
@@ -18,7 +25,7 @@ export function OfflineBar() {
       navigator.serviceWorker.register("/sw.js").catch(() => {});
     }
     return unsub;
-  }, []);
+  }, [accountId]);
 
   // Only surface the banner when there's actionable unsynced work — merely
   // being offline with nothing queued shouldn't dominate ordinary browsing
