@@ -9,14 +9,22 @@ import { listTasks } from "@/lib/db/tasks";
 import { listStickies } from "@/lib/db/stickies";
 import { listAttachments } from "@/lib/db/attachments";
 import { dueBucket } from "@/lib/due";
+import { relativeDate } from "@/lib/format-date";
 import { AppShell } from "@/components/app-shell";
 import { WorkspaceSwitcher } from "@/components/workspace-switcher";
 import { NewNoteButton } from "@/components/new-note-button";
 import { EmptyState } from "@/components/empty-state";
 import { FilesIcon, ModulesIcon, NotesIcon, StickyIcon, TasksIcon } from "@/components/icons";
 
+// Strip raw Markdown markers so the Home preview reads as text, not source
+// (UPGRADE.md §5: "Home currently exposes Markdown markers such as ## and **").
 function snippet(text: string, max = 140): string {
-  const flat = text.trim().replace(/\s+/g, " ");
+  const flat = text
+    .trim()
+    .replace(/^#{1,6}\s+/gm, "")
+    .replace(/[*_`>#-]/g, "")
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")
+    .replace(/\s+/g, " ");
   return flat.length > max ? `${flat.slice(0, max).trimEnd()}…` : flat;
 }
 
@@ -84,7 +92,7 @@ export default async function Page() {
               <span className="note-list-snippet muted">{snippet(featuredNote.content_text)}</span>
             ) : null}
             <span className="muted note-list-meta">
-              Updated {new Date(featuredNote.updated_at).toLocaleDateString()}
+              Updated {relativeDate(featuredNote.updated_at)}
             </span>
           </Link>
           {continueNotes.length > 0 ? (
@@ -94,7 +102,7 @@ export default async function Page() {
                   <Link href={`/notes/${n.id}`}>
                     <span className="note-list-title">{n.title}</span>
                     <span className="muted note-list-meta">
-                      Updated {new Date(n.updated_at).toLocaleDateString()}
+                      Updated {relativeDate(n.updated_at)}
                     </span>
                   </Link>
                 </li>
@@ -131,7 +139,7 @@ export default async function Page() {
             <>
               <span className="k">Next deadline</span>
               <span>{nextDeadline.title}</span>
-              <span className="muted">{new Date(nextDeadline.due_at as string).toLocaleDateString()}</span>
+              <span className="muted">{relativeDate(nextDeadline.due_at as string)}</span>
             </>
           ) : (
             <span className="muted">Nothing else on the horizon.</span>

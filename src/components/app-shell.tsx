@@ -99,9 +99,9 @@ export function AppShell({
             <img src="/icons/lucy-app-icon-64.png" alt="" width={28} height={28} />
             <span>LUCY</span>
           </Link>
-          {/* Phones only — everything below the bottom bar (Notes, Files,
-              Study, Workspaces, Help, Settings, sign out) lives at /more
-              instead of a duplicated horizontal nav strip. */}
+          {/* Phones only — everything not on the bottom bar (Notes,
+              Subjects, Create, Review, Search — UPGRADE.md §6) lives at
+              /more instead of a duplicated horizontal nav strip. */}
           <Link href="/more" className="sidebar-more-link" aria-label="More">
             <MoreIcon size={20} />
           </Link>

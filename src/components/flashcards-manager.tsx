@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { Flashcard } from "@/lib/db/flashcards";
 import type { Module } from "@/lib/db/modules";
 import { friendlyError } from "@/lib/errors";
+import { relativeDate } from "@/lib/format-date";
 import { FlashcardsIcon } from "@/components/icons";
 import { EmptyState } from "@/components/empty-state";
 
@@ -204,7 +205,7 @@ export function FlashcardsManager({
                         <strong>{c.front}</strong>
                         <span className="muted">{c.back}</span>
                         <span className="muted" style={{ fontSize: 12 }}>
-                          {c.due_at ? `Due ${new Date(c.due_at).toLocaleDateString()}` : "New"} · {c.reps} review
+                          {c.due_at ? `Due ${relativeDate(c.due_at)}` : "New"} · {c.reps} review
                           {c.reps === 1 ? "" : "s"}
                         </span>
                         {c.note_id && noteTitle(c.note_id) ? (

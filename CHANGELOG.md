@@ -7,6 +7,34 @@ for a pre-1.0 foundation build.
 
 ## [Unreleased]
 
+## [0.18.0] — 2026-09-11
+### Added
+- **Mobile navigation reprioritised** (UPGRADE.md §6): the bottom bar is
+  now Notes · Subjects · + · Review · Search (was Home · Modules · + ·
+  Tasks · Search) — a notes-and-study app should put notes/subjects/
+  revision one tap away, not Home. Home and Tasks moved to `/more`.
+- **Note editor decluttered**: colour, folder, and tags now live behind a
+  closed-by-default "Details" control in the meta bar (Subject stays
+  visible, outside it); History and Delete consolidated into a "⋯"
+  overflow next to the save status instead of sitting in the main action
+  row. Less stands between opening a note and writing, especially on a
+  phone.
+- **Readable dates everywhere**: a new `relativeDate()` helper
+  (`src/lib/format-date.ts`) replaces raw `toLocaleDateString()` calls on
+  Home, Notes, the module page, flashcards, and attachments — "Today",
+  "Yesterday", a weekday name, or "11 Sep" instead of a full locale string.
+- **Clean previews**: Home's "Continue" note snippet now strips raw
+  Markdown markers (`##`, `**`, link syntax) instead of showing source.
+- Explicit button labels: generic "Add" buttons now read "Add sticky",
+  "Add task", "Add subject", "Add flashcard"; "Revise N due" reads
+  "Review N cards".
+### Note
+- The formatted (WYSIWYG-ish) editor default from UPGRADE.md §3 is
+  deliberately **not** in this release — the assessment itself flags it as
+  needing separate scoping since it touches content storage, version
+  history, export, and the offline path together. Tracked as its own item
+  in BUILD_PLAN.md Phase 8C.
+
 ## [0.17.0] — 2026-09-11
 ### Added
 - **Subjects are now places to work** (UPGRADE.md §1): module cards open

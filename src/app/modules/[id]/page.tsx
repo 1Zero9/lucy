@@ -6,6 +6,7 @@ import { getModule } from "@/lib/db/modules";
 import { listNotes } from "@/lib/db/notes";
 import { listFlashcards } from "@/lib/db/flashcards";
 import { listModules } from "@/lib/db/modules";
+import { relativeDate } from "@/lib/format-date";
 import { AppShell } from "@/components/app-shell";
 import { EmptyState } from "@/components/empty-state";
 import { NewNoteButton } from "@/components/new-note-button";
@@ -73,7 +74,7 @@ export default async function ModulePage({ params }: { params: Promise<{ id: str
               <Link href={`/notes/${n.id}`}>
                 <span className="note-list-title">{n.title}</span>
                 <span className="muted note-list-meta">
-                  Updated {new Date(n.updated_at).toLocaleDateString()}
+                  Updated {relativeDate(n.updated_at)}
                 </span>
               </Link>
             </li>

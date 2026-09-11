@@ -121,7 +121,7 @@ export function ModulesManager({ workspaceId, initialModules }: Props) {
           onChange={(e) => setName(e.target.value)}
         />
         <button className="btn" type="submit" disabled={busy || !name.trim()}>
-          Add
+          Add subject
         </button>
       </form>
 

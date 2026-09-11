@@ -114,89 +114,97 @@ export function NoteMetaBar({
         {pinned ? "★ Pinned" : "☆ Pin"}
       </button>
 
-      <span className="swatches" role="group" aria-label="Note colour">
-        {PALETTE.map((c) => (
-          <button
-            key={c}
-            type="button"
-            className={`swatch${colour === c ? " sel" : ""}`}
-            style={{ background: c }}
-            aria-label={`Colour ${c}`}
-            aria-pressed={colour === c}
-            onClick={() => {
-              setColour(c);
-              patch({ colour: c });
-            }}
-          />
-        ))}
-        <button
-          type="button"
-          className={`swatch clear${!colour ? " sel" : ""}`}
-          aria-label="No colour"
-          aria-pressed={!colour}
-          onClick={() => {
-            setColour(null);
-            patch({ colour: null });
-          }}
-        >
-          ⊘
-        </button>
-      </span>
-
-      <label className="meta-field">
-        <span className="muted">Folder</span>
-        <select
-          value={folderId}
-          onChange={(e) => {
-            const v = e.target.value;
-            setFolderId(v);
-            patch({ folderId: v || null });
-          }}
-        >
-          <option value="">No folder</option>
-          {folders.map((f) => (
-            <option key={f.id} value={f.id}>
-              {f.name}
-            </option>
-          ))}
-        </select>
-      </label>
-
-      <div className="meta-field tags-field">
-        <span className="muted">Tags</span>
-        <span className="chips">
-          {tags.map((t) => (
-            <span className="chip" key={t}>
-              {t}
+      {/* Colour/folder/tags are secondary to Subject — collapsed by default
+          so they don't compete with the writing surface for space,
+          especially on a phone (UPGRADE.md §3/§5). */}
+      <details className="meta-details">
+        <summary>Details</summary>
+        <div className="meta-details-body">
+          <span className="swatches" role="group" aria-label="Note colour">
+            {PALETTE.map((c) => (
               <button
+                key={c}
                 type="button"
-                aria-label={`Remove ${t}`}
-                onClick={() => saveTags(tags.filter((x) => x !== t))}
-              >
-                ×
-              </button>
-            </span>
-          ))}
-          <input
-            list="all-tags"
-            value={draft}
-            placeholder="Add tag…"
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === ",") {
-                e.preventDefault();
-                addDraft();
-              }
-            }}
-            onBlur={addDraft}
-          />
-          <datalist id="all-tags">
-            {allTags.map((t) => (
-              <option key={t.id} value={t.name} />
+                className={`swatch${colour === c ? " sel" : ""}`}
+                style={{ background: c }}
+                aria-label={`Colour ${c}`}
+                aria-pressed={colour === c}
+                onClick={() => {
+                  setColour(c);
+                  patch({ colour: c });
+                }}
+              />
             ))}
-          </datalist>
-        </span>
-      </div>
+            <button
+              type="button"
+              className={`swatch clear${!colour ? " sel" : ""}`}
+              aria-label="No colour"
+              aria-pressed={!colour}
+              onClick={() => {
+                setColour(null);
+                patch({ colour: null });
+              }}
+            >
+              ⊘
+            </button>
+          </span>
+
+          <label className="meta-field">
+            <span className="muted">Folder</span>
+            <select
+              value={folderId}
+              onChange={(e) => {
+                const v = e.target.value;
+                setFolderId(v);
+                patch({ folderId: v || null });
+              }}
+            >
+              <option value="">No folder</option>
+              {folders.map((f) => (
+                <option key={f.id} value={f.id}>
+                  {f.name}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <div className="meta-field tags-field">
+            <span className="muted">Tags</span>
+            <span className="chips">
+              {tags.map((t) => (
+                <span className="chip" key={t}>
+                  {t}
+                  <button
+                    type="button"
+                    aria-label={`Remove ${t}`}
+                    onClick={() => saveTags(tags.filter((x) => x !== t))}
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+              <input
+                list="all-tags"
+                value={draft}
+                placeholder="Add tag…"
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === ",") {
+                    e.preventDefault();
+                    addDraft();
+                  }
+                }}
+                onBlur={addDraft}
+              />
+              <datalist id="all-tags">
+                {allTags.map((t) => (
+                  <option key={t.id} value={t.name} />
+                ))}
+              </datalist>
+            </span>
+          </div>
+        </div>
+      </details>
     </div>
   );
 }

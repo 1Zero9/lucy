@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import type { Attachment } from "@/lib/db/attachments";
 import { friendlyError } from "@/lib/errors";
+import { relativeDate } from "@/lib/format-date";
 import { FilesIcon } from "@/components/icons";
 import { EmptyState } from "@/components/empty-state";
 
@@ -149,7 +150,7 @@ export function AttachmentsManager({
                   {a.filename}
                 </a>
                 <span className="muted">
-                  {humanSize(a.size_bytes)} · {new Date(a.created_at).toLocaleDateString()}
+                  {humanSize(a.size_bytes)} · {relativeDate(a.created_at)}
                 </span>
               </span>
               <span className="row">

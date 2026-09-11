@@ -6,10 +6,10 @@ import { useRouter } from "next/navigation";
 import {
   CameraIcon,
   DrawingIcon,
-  HomeIcon,
   ModulesIcon,
   NotesIcon,
   PlusIcon,
+  RevisionsIcon,
   SearchIcon,
   StickyIcon,
   TasksIcon,
@@ -40,10 +40,11 @@ async function uploadFile(workspaceId: string, file: File): Promise<void> {
 }
 
 /**
- * Mobile-only bottom navigation: Home · Modules · + · Tasks · Search
- * (docs/LUCY_STYLE_GUIDE.md §7). Hidden on desktop via CSS. The centre "+"
- * opens fast-capture actions; each lands the user directly in something
- * editable — one or two taps, per the guide's "fast capture" principle.
+ * Mobile-only bottom navigation: Notes · Subjects · + · Review · Search
+ * (UPGRADE.md §6 — notes-and-study is the primary brief, so notes/subjects/
+ * revision get the permanent slots; Home and Tasks move to /more). Hidden on
+ * desktop via CSS. The centre "+" opens fast-capture actions; each lands the
+ * user directly in something editable — one or two taps.
  */
 export function MobileNav({ active, workspaceId }: { active?: Section; workspaceId?: string }) {
   const router = useRouter();
@@ -164,13 +165,13 @@ export function MobileNav({ active, workspaceId }: { active?: Section; workspace
       />
 
       <nav className="mobile-nav" aria-label="Primary">
-        <Link href="/" aria-current={active === "home" ? "page" : undefined}>
-          <HomeIcon size={22} />
-          <span>Home</span>
+        <Link href="/notes" aria-current={active === "notes" ? "page" : undefined}>
+          <NotesIcon size={22} />
+          <span>Notes</span>
         </Link>
         <Link href="/modules" aria-current={active === "modules" ? "page" : undefined}>
           <ModulesIcon size={22} />
-          <span>Modules</span>
+          <span>Subjects</span>
         </Link>
         <button
           type="button"
@@ -183,9 +184,9 @@ export function MobileNav({ active, workspaceId }: { active?: Section; workspace
         >
           <PlusIcon size={24} />
         </button>
-        <Link href="/tasks" aria-current={active === "tasks" ? "page" : undefined}>
-          <TasksIcon size={22} />
-          <span>Tasks</span>
+        <Link href="/revise" aria-current={active === "study" ? "page" : undefined}>
+          <RevisionsIcon size={22} />
+          <span>Review</span>
         </Link>
         <Link href="/search" aria-current={active === "search" ? "page" : undefined}>
           <SearchIcon size={22} />

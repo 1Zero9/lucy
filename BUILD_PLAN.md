@@ -154,29 +154,40 @@ not the full IA rework)
       exactly the §4 finding. Also relabelled "Revise N due" -> "Review N
       cards" / "Add" -> "Add flashcard" for explicit button language.
 
-### 8C — Editor and controls (UPGRADE.md §3–5)
-- [ ] Formatted (WYSIWYG-ish) editing by default — bold looks bold, headings
-      look like headings; Markdown source view stays available, optional.
-      Preserve existing content, version history, export, and offline path.
-- [ ] Reorder the phone editor: breadcrumb + subject, title + save status,
-      compact formatting controls, writing surface, attachments/related
-      below — writing starts near the top of the viewport, not ~560px down
-- [ ] Subject assignment stays visible; colour/tags/history/export/delete
-      move into a Details/overflow control
-- [ ] Consistent button language: filled purple = primary action, neutral =
-      secondary, overflow menu for rename/delete; explicit labels ("New
-      subject", "Add flashcard", "Review 3 cards") instead of bare "Add"
-- [ ] Clickable cards open their content; rename/delete move off the card
-      face and into its menu
-- [ ] Visual density pass: compact note rows (title, subject, excerpt,
-      readable date), fewer shadows/borders, consistent input/button
-      heights, clean previews (strip raw `##`/`**` from Home excerpts),
-      relative dates ("Yesterday", "11 Sep")
-- [ ] Mobile bottom bar reconsidered around the notes/study brief (proposed:
-      Notes, Subjects, Create, Review, Search) — update docs alongside code
-      if this navigation change is agreed and shipped
+### 8C — Editor and controls (UPGRADE.md §3–5) — partial, v0.18.0
+Split deliberately: the formatted-editor swap is explicitly flagged by
+UPGRADE.md itself as needing separate scoping (it touches content storage,
+history, export, offline path together). Done here is everything else,
+which is lower-risk, pure UI/nav.
+- [ ] **Deferred, own task**: formatted (WYSIWYG-ish) editing by default —
+      bold looks bold, headings look like headings; Markdown stays optional.
+      Must preserve existing content, version history, export, and offline
+      path — needs its own review, not a bundle with polish.
+- [x] Note editor decluttered instead of literally reordered: colour/folder/
+      tags collapsed into a `<details>` "Details" control (closed by
+      default); History/Delete consolidated into a "⋯" overflow next to the
+      save status. Net effect matches the proposed reorder — far less
+      stands between opening a note and the writing surface on a phone —
+      without moving DOM structure around.
+- [x] Subject assignment stays visible (added in 8B, first field in the
+      meta bar, outside the new Details control)
+- [x] Explicit button labels: "Add" → "Add sticky"/"Add task"/"Add subject"/
+      "Add flashcard"; "Revise N due" → "Review N cards"
+- [x] Module cards clickable through to their own page (done in 8B);
+      Rename/Delete already off the card face there
+- [x] Density: Home's note preview strips raw Markdown markers (`##`, `**`,
+      links); relative dates ("Today", "Yesterday", a weekday, or "11 Sep")
+      replace `toLocaleDateString()` on Home, Notes, the module page,
+      flashcards, and attachments (new `src/lib/format-date.ts`)
+- [x] Mobile bottom bar reprioritised to Notes · Subjects · + · Review ·
+      Search (was Home · Modules · + · Tasks · Search) per UPGRADE.md §6;
+      Home and Tasks moved to `/more`. Code comments updated to match.
 - [ ] Desktop: quiet subject/nav rail beside a note list next to the editor,
-      so switching notes doesn't require a full page return
+      so switching notes doesn't require a full page return — not started,
+      a bigger IA change than the rest of this slice
+- [ ] Remaining density/consistency spots not swept this pass: workspaces
+      list, tasks list Edit/Delete grouping — same treatment as flashcards
+      would apply, just not done everywhere yet
 
 ### 8D — Offline scope, export, and backup (UPGRADE.md §8)
 - [ ] State offline capability precisely in-product: cached note editing is

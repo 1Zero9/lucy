@@ -282,12 +282,24 @@ export function NoteEditor({
               </>
             ) : null}
           </span>
-          <button className="linkish" type="button" onClick={() => setShowVersions((v) => !v)}>
-            History ({versions.length})
-          </button>
-          <button className="linkish danger" type="button" onClick={del}>
-            Delete
-          </button>
+          {/* History and Delete are occasional actions, not everyday ones —
+              tucked behind an overflow so they don't compete with the save
+              status for attention (UPGRADE.md §3/§4). */}
+          <details className="note-overflow">
+            <summary aria-label="Note options">⋯</summary>
+            <div className="note-overflow-body">
+              <button
+                className="linkish"
+                type="button"
+                onClick={() => setShowVersions((v) => !v)}
+              >
+                History ({versions.length})
+              </button>
+              <button className="linkish danger" type="button" onClick={del}>
+                Delete note
+              </button>
+            </div>
+          </details>
         </div>
       </div>
 

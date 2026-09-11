@@ -6,18 +6,19 @@ import {
   ArchiveIcon,
   FilesIcon,
   HelpIcon,
-  NotesIcon,
+  HomeIcon,
   RevisionsIcon,
-  SettingsIcon
+  SettingsIcon,
+  TasksIcon
 } from "@/components/icons";
 
 export const metadata = { title: "More · LUCY" };
 
 /**
- * Mobile-only landing for everything that doesn't fit the bottom bar (Home,
- * Modules, Create, Tasks, Search) — Notes, Files, Study, Workspaces, Help,
- * Settings, and sign out. Reached from the "More" icon next to the brand on
- * phones (UPGRADE.md — no duplicated desktop nav above mobile content).
+ * Mobile-only landing for everything that doesn't fit the bottom bar (Notes,
+ * Subjects, Create, Review, Search — UPGRADE.md §6 prioritises notes over
+ * Home/Tasks there) — Home, Tasks, Files, Study, Workspaces, Help, Settings,
+ * and sign out. Reached from the "More" icon next to the brand on phones.
  * On desktop these all already live in the sidebar, so this page is unlinked
  * there; visiting it directly still works.
  */
@@ -25,7 +26,8 @@ export default async function MorePage() {
   const user = await requireUser();
 
   const links = [
-    { href: "/notes", label: "Notes", icon: NotesIcon },
+    { href: "/", label: "Home", icon: HomeIcon },
+    { href: "/tasks", label: "Tasks", icon: TasksIcon },
     { href: "/files", label: "Files", icon: FilesIcon },
     { href: "/study", label: "Study", icon: RevisionsIcon },
     { href: "/workspaces", label: "Workspaces", icon: ArchiveIcon },

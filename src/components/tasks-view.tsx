@@ -195,7 +195,7 @@ export function TasksView({
         />
         <input type="date" aria-label="Due date" value={due} onChange={(e) => setDue(e.target.value)} />
         <button className="btn" type="submit" disabled={!title.trim()}>
-          Add
+          Add task
         </button>
       </form>
 

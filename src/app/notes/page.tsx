@@ -6,6 +6,7 @@ import { resolveActiveWorkspace } from "@/lib/workspace-context";
 import { listNotes, type NoteListOpts } from "@/lib/db/notes";
 import { listFolders } from "@/lib/db/folders";
 import { listTags, tagsForNotes } from "@/lib/db/tags";
+import { relativeDate } from "@/lib/format-date";
 import { AppShell } from "@/components/app-shell";
 import { NewNoteButton } from "@/components/new-note-button";
 import { NotesFilter } from "@/components/notes-filter";
@@ -99,7 +100,7 @@ export default async function NotesPage({
                   {snippet(n.content_text) || "Empty note"}
                 </span>
                 <span className="note-list-meta muted">
-                  Updated {new Date(n.updated_at).toLocaleDateString()}
+                  Updated {relativeDate(n.updated_at)}
                   {(noteTags.get(n.id) ?? []).map((t) => (
                     <span className="chip sm" key={t.id}>
                       {t.name}

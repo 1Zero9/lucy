@@ -100,7 +100,7 @@ export function StickiesBoard({
           onChange={(e) => setDraft(e.target.value)}
         />
         <button className="btn" type="submit" disabled={!draft.trim()}>
-          Add
+          Add sticky
         </button>
       </form>
 
