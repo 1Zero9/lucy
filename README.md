@@ -66,17 +66,23 @@ Create/use `lucy-dev` for remote development and local D1 for routine local deve
 ## Repository structure
 
 ```text
-MASTER.md              project authority
-AGENTS.md              generic coding-agent rules
-CLAUDE.md              Claude-specific operating rules
-BUILD_PLAN.md          staged work
-docs/                  product, architecture, security, design
-migrations/            D1 schema history
-scripts/               Cloudflare bootstrap and safety scripts
-src/                   application source
-wrangler.jsonc         Cloudflare resource bindings
+MASTER.md                 project authority
+AGENTS.md                 generic coding-agent rules
+CLAUDE.md                 Claude-specific operating rules
+BUILD_PLAN.md             staged work
+CHANGELOG.md              what shipped, by version
+docs/                     product, architecture, security, design, versioning
+migrations/                D1 schema history
+scripts/                  Cloudflare bootstrap and safety scripts
+src/                       application source
+src/lib/help-content.ts   in-product Help copy (see /help in the app)
+wrangler.jsonc            Cloudflare resource bindings
 ```
 
-## Current phase
+## Status and versioning
 
-Phase 0 / Phase 1 foundation only.
+See `CHANGELOG.md` for what has shipped and `docs/VERSIONING.md` for how the
+version number is chosen. `MASTER.md`'s Status line and `BUILD_PLAN.md`'s
+checkboxes reflect current progress. Nothing has been deployed to real users
+yet — see `docs/CLOUDFLARE_SETUP.md` for the local vs. dev vs. production
+distinction before running any deploy or migration command.

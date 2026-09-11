@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import {
   ArchiveIcon,
   FilesIcon,
+  HelpIcon,
   HomeIcon,
   ModulesIcon,
   NotesIcon,
@@ -22,7 +23,8 @@ export type Section =
   | "tasks"
   | "study"
   | "workspaces"
-  | "settings";
+  | "settings"
+  | "help";
 
 type NavItem = {
   section: Section;
@@ -51,6 +53,7 @@ const SECONDARY: { section: Section; href: string; label: string; icon: typeof H
 
 const UTILITY: { section: Section; href: string; label: string; icon: typeof HomeIcon }[] = [
   { section: "workspaces", href: "/workspaces", label: "Workspaces", icon: ArchiveIcon },
+  { section: "help", href: "/help", label: "Help", icon: HelpIcon },
   { section: "settings", href: "/settings", label: "Settings", icon: SettingsIcon }
 ];
 

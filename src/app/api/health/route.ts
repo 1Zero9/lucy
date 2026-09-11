@@ -1,7 +1,9 @@
+import pkg from "../../../../package.json";
+
 export async function GET() {
   return Response.json({
     ok: true,
     service: "lucy",
-    version: "0.1.0"
+    version: pkg.version
   });
 }

@@ -1,6 +1,6 @@
 # LUCY — MASTER CONTROL FILE
 
-**Status:** Foundation / Phase 1  
+**Status:** Foundation — Phases 0–6 built (see `CHANGELOG.md`, `BUILD_PLAN.md`). Nothing deployed to real users yet. Phase 7 (Intelligence) requires explicit owner approval before any work starts.  
 **Owner intent:** Build a small, dependable learning workspace for fewer than five private users.  
 **Primary rule:** Do not expand scope without an explicit instruction from the owner.
 

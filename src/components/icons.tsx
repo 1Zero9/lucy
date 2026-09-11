@@ -149,6 +149,16 @@ export function UploadIcon(props: IconProps) {
   ));
 }
 
+export function HelpIcon(props: IconProps) {
+  return base("#7C3AED")(props, (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M9.8 9a2.4 2.4 0 1 1 3.6 2.1c-.9.5-1.4 1-1.4 2" />
+      <path d="M12 17h.01" />
+    </>
+  ));
+}
+
 export function CameraIcon(props: IconProps) {
   return base("#2563EB")(props, (
     <>
