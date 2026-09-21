@@ -40,7 +40,7 @@ async function uploadFile(workspaceId: string, file: File): Promise<void> {
 }
 
 /**
- * Mobile-only bottom navigation: Notes · Subjects · + · Review · Search
+ * Mobile-only bottom navigation: Notes · Notebooks · + · Review · Find
  * (UPGRADE.md §6 — notes-and-study is the primary brief, so notes/subjects/
  * revision get the permanent slots; Home and Tasks move to /more). Hidden on
  * desktop via CSS. The centre "+" opens fast-capture actions; each lands the
@@ -171,12 +171,12 @@ export function MobileNav({ active, workspaceId }: { active?: Section; workspace
         </Link>
         <Link href="/modules" aria-current={active === "modules" ? "page" : undefined}>
           <ModulesIcon size={22} />
-          <span>Subjects</span>
+          <span>Notebooks</span>
         </Link>
         <button
           type="button"
           className="mobile-nav-fab"
-          aria-label="Create"
+          aria-label="Capture"
           aria-haspopup="dialog"
           aria-expanded={open}
           disabled={!workspaceId}
@@ -190,7 +190,7 @@ export function MobileNav({ active, workspaceId }: { active?: Section; workspace
         </Link>
         <Link href="/search" aria-current={active === "search" ? "page" : undefined}>
           <SearchIcon size={22} />
-          <span>Search</span>
+          <span>Find</span>
         </Link>
       </nav>
 

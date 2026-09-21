@@ -84,9 +84,50 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 
 .shell {
   min-height: 100dvh;
-  display: grid;
-  grid-template-columns: 248px 1fr;
+  display: block;
 }
+
+/* The desktop shell is deliberately infrastructure, not a permanent product
+   surface. It stays small so the desk, notebook and page can own the canvas. */
+.masthead {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  min-height: 64px;
+  padding: 0 clamp(20px, 4vw, 64px);
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter: blur(14px);
+}
+.masthead-nav { display: flex; align-items: center; gap: 4px; margin-left: clamp(28px, 4vw, 64px); }
+.masthead-nav a,
+.masthead-capture .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 36px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  box-shadow: none;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.masthead-nav a:hover,
+.masthead-nav a[aria-current="page"] { color: var(--text); background: var(--background); }
+.masthead-capture { margin-left: 8px; }
+.masthead-capture > span { display: block; }
+.masthead-capture .btn { color: var(--primary-strong); }
+.masthead-capture .btn:hover:not(:disabled) { background: color-mix(in srgb, var(--primary) 8%, transparent); color: var(--primary-strong); }
+.masthead-capture .btn::before { content: "+"; font-size: 18px; font-weight: 400; line-height: 1; }
+.masthead-settings { display: grid; width: 36px; height: 36px; margin-left: auto; place-items: center; border-radius: 8px; color: var(--muted); }
+.masthead-settings:hover { background: var(--background); color: var(--text); }
+.masthead-more-link { display: none; }
 
 .sidebar {
   padding: var(--space-6) var(--space-4);
@@ -191,7 +232,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 
 .main {
   padding: 36px clamp(24px, 4vw, 56px) 56px;
-  max-width: 1360px;
+  max-width: none;
   width: 100%;
   background: var(--background);
 }
@@ -1909,6 +1950,140 @@ h2.overdue { color: var(--error); }
   .notes-workspace-header { padding: 4px 2px 20px; }
   .notes-workspace .page-title { font-size: 26px; }
   .notes-workspace .notes-browser { padding: 14px 10px; }
+}
+
+/* --- Desk: quiet orientation, led by the student's own work --- */
+.sidebar-capture { padding: 18px 8px 0; }
+.sidebar-capture > span { display: block; }
+.sidebar-capture .btn { width: 100%; justify-content: flex-start; gap: 10px; padding: 0 14px; box-shadow: none; }
+.sidebar-capture .btn::before { content: "+"; font-size: 20px; font-weight: 400; line-height: 1; }
+.sidebar-quiet-actions { display: grid; justify-items: start; gap: 8px; margin-top: auto; padding: 18px 8px 0; }
+.sidebar-quiet-actions > a { display: grid; width: 40px; height: 40px; place-items: center; border-radius: 10px; color: var(--muted); }
+.sidebar-quiet-actions > a:hover { background: var(--background); color: var(--text); }
+.sidebar-quiet-actions .sidebar-version { margin-top: 0; padding-top: 0; }
+
+.desk {
+  min-height: calc(100dvh - 112px);
+  max-width: 900px;
+  padding: clamp(92px, 18vh, 190px) 0 96px;
+}
+.desk-header { margin-bottom: clamp(64px, 12vh, 136px); }
+.desk-header h1 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.desk-primary {
+  display: block;
+  max-width: 700px;
+  padding: 0 0 0 28px;
+  border-left: 1px solid var(--border);
+  color: var(--text);
+  text-decoration: none;
+}
+.desk-primary-note { position: relative; }
+.desk-primary-note::before {
+  position: absolute;
+  top: 5px;
+  left: -4px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--subject-colour, var(--primary));
+  content: "";
+}
+.desk-subject {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 20px;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+}
+.desk-subject i { width: 8px; height: 8px; border-radius: 50%; background: var(--subject-colour); }
+.desk-kicker {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+.desk-primary h2 {
+  max-width: 16ch;
+  margin: 0;
+  color: var(--text);
+  font-family: var(--font-display);
+  font-size: clamp(34px, 5vw, 54px);
+  font-weight: 700;
+  letter-spacing: -0.055em;
+  line-height: 1.04;
+}
+.desk-primary p {
+  max-width: 58ch;
+  margin: 20px 0 0;
+  color: #475569;
+  font-size: 17px;
+  line-height: 1.65;
+}
+.desk-open {
+  display: inline-block;
+  margin-top: 26px;
+  color: var(--primary-strong);
+  font-size: 14px;
+  font-weight: 700;
+}
+.desk-primary:hover h2 { color: var(--primary-strong); }
+.desk-primary-task { border-left-color: var(--warning); }
+.desk-primary-task .desk-kicker { color: #B45309; }
+.desk-secondary {
+  max-width: 290px;
+  margin: 64px 0 0 clamp(28px, 28vw, 310px);
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+.desk-secondary > span, .desk-secondary small { display: block; color: var(--muted); font-size: 12px; }
+.desk-secondary > span { margin-bottom: 7px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+.desk-secondary-subject { margin-bottom: 4px; font-weight: 600; }
+.desk-secondary a { display: block; color: var(--text); font-family: var(--font-display); font-size: 17px; font-weight: 700; text-decoration: none; }
+.desk-secondary a:hover { color: var(--primary-strong); }
+.desk-secondary small { margin-top: 5px; }
+.desk-empty-copy { max-width: 360px; padding-left: 28px; border-left: 1px solid var(--border); }
+.desk-empty-copy p { margin: 0 0 22px; color: var(--muted); font-size: 17px; line-height: 1.6; }
+
+@media (max-width: 760px) {
+  /* Phase 1 intentionally preserves the existing mobile navigation. */
+  .masthead {
+    position: static;
+    min-height: auto;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    backdrop-filter: none;
+  }
+  .masthead-nav, .masthead-capture, .masthead-settings { display: none; }
+  .masthead-more-link {
+    display: grid;
+    width: 40px;
+    height: 40px;
+    margin-left: auto;
+    place-items: center;
+    border-radius: var(--radius-md);
+    color: var(--text);
+  }
+  .masthead-more-link:hover { background: var(--background); }
+  .sidebar-capture { display: none; }
+  .sidebar-quiet-actions { display: none; }
+  .desk { min-height: calc(100dvh - 160px); padding: 4px 2px 48px; }
+  .desk-header { margin-bottom: 56px; }
+  .desk-primary { padding-left: 20px; }
+  .desk-primary h2 { font-size: 36px; }
+  .desk-primary p { font-size: 16px; }
+  .desk-secondary { margin: 48px 0 0 20px; }
+  .desk-empty-copy { padding-left: 20px; }
 }
 
 /* --- Product refresh: calm, precise workspace surfaces --- */
